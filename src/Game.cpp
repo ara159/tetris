@@ -12,7 +12,8 @@ Game::Game(bool debug)
 {
     this->paused = false;
     this->debug_mode = debug;
-    this->queue_animations = std::vector<Animation>();
+    this->frozen = false;
+    this->lines_completeds = std::vector<int>();
     reset();
 }
 
@@ -20,18 +21,51 @@ Game::~Game()
 {
 }
 
-void Game::draw(sf::RenderWindow* window)
+void Game::draw()
 {
-    runAnimations();
+    const auto gridColor = sf::Color{17, 0, 28};
+    const auto bgColor = sf::Color{98, 45, 138};
+    
+    // limpa a tela
+    window->clear(bgColor);
+    
+    // desenha os blocos do objeto em queda
     for (auto block : *turnForm->blocks)
     {
         window->draw(*block);
     }
-    if (debug_mode) {
-        turnForm->debug(window);
+
+    // desenha os blocos
+    for (int i = 0; i < COLUMNS; i++)
+    {
+        for (int j = 0; j < LINES; j++)
+        {
+            if (blocks[i][j] == nullptr) continue; 
+            window->draw(*blocks[i][j]);
+        }
     }
-    drawBlocks(window);
-    drawGrid(window);
+
+    // desenha o grid horizontal
+    for (int i = 0; i < LINES; i ++)
+    {
+        auto v1 = sf::Vertex(sf::Vector2f(0, i * BLOCK_SIZE));
+        auto v2 = sf::Vertex(sf::Vector2f(FIELD_W, i * BLOCK_SIZE));
+        v1.color = v2.color = gridColor;
+        sf::Vertex line[] = {v1, v2};
+        window->draw(line, 2, sf::Lines);
+    }
+
+    // desenha o grid vertical
+    for (int i = 0; i < COLUMNS; i ++)
+    {
+        auto v1 = sf::Vertex(sf::Vector2f(i * BLOCK_SIZE, 0));
+        auto v2 = sf::Vertex(sf::Vector2f(i * BLOCK_SIZE, FIELD_H));
+        v1.color = v2.color = gridColor;
+        sf::Vertex line[] = {v1, v2};
+        window->draw(line, 2, sf::Lines);
+    }
+    
+    // desenha informações de debug
     if (debug_mode) {
         for (auto block : *turnForm->blocks)
         {
@@ -41,67 +75,69 @@ void Game::draw(sf::RenderWindow* window)
             rect.setFillColor(sf::Color{230, 46, 0});
             window->draw(rect);
         }
+        turnForm->debug(window);
     }
+
+    // exibe
+    window->display();
 }
 
-void Game::pausePressed()
-{
-    this->paused = !this->paused;
-}
-
-void Game::fall() {
-    if (!queue_animations.empty()) return;
-    colldown--;
+void Game::gameLogic() {
+    if (paused) return;
+    if (frozen) return;
     
-    if (colldown > 0)
-        return;
-    
+    // handle velocity using cooldown
+    if (--colldown > 0) return;
     colldown = MAX_FALL_COOLDOWN;
 
+    // the logic here is move the turn block down
     bool collide = checkFallCollisions();
     while (force_drop && !collide)
     {
         turnForm->move(0, 1);
         collide = checkFallCollisions();
     }
-    
     force_drop = false;
-
+        
+    // if collide, handle some events
     if (collide) {
-        addTurnToBlocks();
-        checkGameOver();
-        checkLineComplete();
+
+        // add the turn block in matrix
+        for (auto block : *turnForm->blocks)
+        {
+            auto pos = block->getPosition();
+            blocks[pos.x][pos.y] = block;
+        }
+
+        // check for lines completes
+        for (int i = 0; i < LINES; i++)
+        {
+            bool complete = true;
+            for (int j = 0; j < COLUMNS; j++)
+            {
+                complete = blocks[j][i] != nullptr && complete;
+            }
+            if (complete)
+            {        
+                lines_completeds.push_back(i);
+            }
+        }
+        
+        // check for game over
+        for (int i = 0; i < COLUMNS; i++)
+        {
+            if (blocks[i][0] != nullptr)
+            {
+                reset();
+                return;
+            }
+        }
+        
         turnForm = new Piece();
         return;
     }
-    turnForm->move(0, 1);
-}
-
-void Game::checkGameOver() {
-    for (int i = 0; i < COLUMNS; i++)
-    {
-        // game over condition
-        if (blocks[i][0] != nullptr)
-        {
-            reset();
-            return;
-        }
-    }
-}
-
-void Game::checkLineComplete() {
-    for (int i = 0; i < LINES; i++)
-    {
-        bool complete = true;
-        for (int j = 0; j < COLUMNS; j++)
-        {
-            complete = blocks[j][i] != nullptr && complete;
-        }
-        if (complete)
-        {            
-            queue_animations.push_back(Animation(60, i, AnimationType::LineCompleted));
-            return;
-        }
+    else {
+        turnForm->move(0, 1);
     }
 }
 
@@ -133,53 +169,8 @@ bool Game::checkFallCollisions() {
     return false;
 }
 
-void Game::addTurnToBlocks() {
-    for (auto block : *turnForm->blocks)
-    {
-        auto pos = block->getPosition();
-        blocks[pos.x][pos.y] = block;
-    }
-}
-
-void Game::drawBlocks(sf::RenderWindow* window) {
-    for (int i = 0; i < COLUMNS; i++)
-    {
-        for (int j = 0; j < LINES; j++)
-        {
-            if (blocks[i][j] == nullptr) continue; 
-            window->draw(*blocks[i][j]);
-        }
-    }
-}
-
-void Game::drawGrid(sf::RenderWindow* window) {
-    const auto color = sf::Color{17, 0, 28};
-
-    for (int i = 0; i < LINES; i ++)
-    {
-        auto v1 = sf::Vertex(sf::Vector2f(0, i * BLOCK_SIZE));
-        auto v2 = sf::Vertex(sf::Vector2f(FIELD_W, i * BLOCK_SIZE));
-        v1.color = v2.color = color;
-        sf::Vertex line[] = {v1, v2};
-        window->draw(line, 2, sf::Lines);
-    }
-
-    for (int i = 0; i < COLUMNS; i ++)
-    {
-        auto v1 = sf::Vertex(sf::Vector2f(i * BLOCK_SIZE, 0));
-        auto v2 = sf::Vertex(sf::Vector2f(i * BLOCK_SIZE, FIELD_H));
-        v1.color = v2.color = color;
-        sf::Vertex line[] = {v1, v2};
-        window->draw(line, 2, sf::Lines);
-    }
-}
-
 void Game::rotatePressed() {
     turnForm->rotate(M_PI/2);
-}
-
-bool Game::isPaused() {
-    return paused;
 }
 
 void Game::dropPressed() {
@@ -189,6 +180,7 @@ void Game::dropPressed() {
 void Game::movePressed(int direction) {
     sf::Vector2i position;
     Block *candidate;
+    
     for (auto block : *turnForm->blocks)
     {
         position = block->getPosition();
@@ -224,79 +216,99 @@ void Game::reset() {
     {
         for (int j = 0; j < LINES; j++)
         {
-            // free(blocks[i][j]);
             blocks[i][j] = nullptr;
         }
     }
 }
 
 void Game::runAnimations() {
-    if (queue_animations.size() <= 0)
-        return;
-    
-    auto turn = &queue_animations.front();
-    
-    switch (turn->anim_type)
+    // animação de linha completa
+    if (lines_completeds.size() > 0)
     {
-    case AnimationType::LineCompleted:
-        for (int i = 0; i < COLUMNS; i++)
+        int line = lines_completeds.front();
+        int duration = 10;
+        int tx = duration/2;
+
+        // faz a animação acontecer e pinta na tela
+        for (int i = 0; i < duration; i++)
         {
-            if (turn->duration % MAX_FALL_COOLDOWN == 0) {
-                auto block = blocks[i][turn->line];
-                auto color = block->getFillColor();
-                
-                Uint8 r = color.r - ((255 - 98) / 3);
-                Uint8 g = color.g - ((255 - 45) / 3);
-                Uint8 b = color.b - ((255 - 138) / 3);
-                
-                std::cout << (uint) r << "," << (uint) g << "," << (uint) b << std::endl;
-                
-                block->setFillColor(Color{r, g, b});
-            }
-        }
-        break;
-    }
-    
-    turn->run();
-    
-    if (turn->isCompleted())
-    {
-        queue_animations.erase(queue_animations.begin());
-        switch (turn->anim_type)
-        {
-        case AnimationType::LineCompleted:
-            for (int i = 0; i < COLUMNS; i++)
+            if ((duration - i) % tx == 0)
             {
-                for (int j = turn->line; j > 0; j--)
+                for (int j = 0; j < COLUMNS; j++)
                 {
-                    if (blocks[i][j-1] != nullptr) {
-                        blocks[i][j-1]->move(0, 1);
-                    }
-                    blocks[i][j] = blocks[i][j-1];
+                    auto block = blocks[j][line];
+                    auto color = block->getFillColor();
+                    Uint8 r = color.r - ((255 - 98) / (duration/tx));
+                    Uint8 g = color.g - ((255 - 45) / (duration/tx));
+                    Uint8 b = color.b - ((255 - 138) / (duration/tx));
+                    block->setFillColor(Color{r, g, b});
                 }
             }
-            checkLineComplete();
-            break;
+            draw();
         }
+
+        // faz a lógica necessária após a animação
+        for (int i = 0; i < COLUMNS; i++)
+        {
+            for (int j = line; j > 0; j--)
+            {
+                if (blocks[i][j-1] != nullptr) {
+                    blocks[i][j-1]->move(0, 1);
+                }
+                blocks[i][j] = blocks[i][j-1];
+            }
+        }
+
+        lines_completeds.erase(lines_completeds.begin());
     }
 }
 
-Animation::Animation(int duration, int line, AnimationType anim_type)
-{
-    this->duration = duration;
-    this->line = line;
-    this->anim_type = anim_type;
+void Game::start() {
+    window = new sf::RenderWindow(sf::VideoMode(BLOCK_SIZE * COLUMNS, BLOCK_SIZE * LINES), "Tetris");
+    window->setVerticalSyncEnabled(true);
+    window->setFramerateLimit(60);
+    run();
 }
 
-Animation::~Animation()
-{
+void Game::run() {
+    while (window->isOpen())
+    {
+        eventHandler();
+        runAnimations();
+        gameLogic();
+        draw();
+    }
 }
 
-void Animation::run() {
-    this->duration--;
-}
-
-bool Animation::isCompleted() 
-{
-    return duration <= 0;
+void Game::eventHandler() {
+    sf::Event event;
+    while (window->pollEvent(event))
+    {
+        if (event.type == sf::Event::Closed)
+        {
+            window->close();
+        }
+        if ((event.type == sf::Event::KeyReleased) && (event.key.code == sf::Keyboard::Enter))
+        {
+            paused = !paused;
+        }
+        if (!paused) {
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+            {
+                movePressed(-1);
+            }
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+            {
+                movePressed(1);
+            }
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+            {
+                dropPressed();
+            }
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space)
+            {
+                rotatePressed();
+            }
+        }
+    }
 }

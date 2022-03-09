@@ -30,29 +30,27 @@ private:
     int colldown;
     bool paused;
     Block* blocks[COLUMNS][LINES];
-    void drawGrid(sf::RenderWindow* window);
-    void drawBlocks(sf::RenderWindow* window);
-    void addTurnToBlocks();
-    bool checkFallCollisions();
+    sf::RenderWindow* window;
     Piece* turnForm;
     bool debug_mode;
     bool force_drop;
+    bool frozen;
+    std::vector<int> lines_completeds;
+    bool checkFallCollisions();
     void reset();
     void runAnimations();
-    std::vector<Animation> queue_animations;
+    void run();
+    void gameLogic();
+    void draw();
+    void rotatePressed();
+    void increaseVelocity();
+    void dropPressed();
+    void movePressed(int direction);
+    void eventHandler();
 public:
     Game(bool debug);
     ~Game();
-    void fall();
-    void draw(sf::RenderWindow* window);
-    void pausePressed();
-    void rotatePressed();
-    void increaseVelocity();
-    bool isPaused();
-    void dropPressed();
-    void movePressed(int direction);
-    void checkLineComplete();
-    void checkGameOver();
+    void start();
 };
 
 #endif
