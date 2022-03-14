@@ -7,12 +7,12 @@
 #include "Piece.hpp"
 #include "constants.hpp"
 #include "Game.hpp"
+#include <string>
 
 Game::Game(bool debug)
 {
     this->paused = false;
     this->debug_mode = debug;
-    this->frozen = false;
     this->lines_completeds = std::vector<int>();
     reset();
 }
@@ -23,11 +23,31 @@ Game::~Game()
 
 void Game::draw()
 {
-    const auto gridColor = sf::Color{17, 0, 28};
+    const auto gridColor = sf::Color{78, 25, 118};
     const auto bgColor = sf::Color{98, 45, 138};
     
     // limpa a tela
     window->clear(bgColor);
+    
+    // // desenha o grid horizontal
+    for (int i = 0; i < LINES; i ++)
+    {
+        auto v1 = sf::Vertex(sf::Vector2f(0, i * BLOCK_SIZE));
+        auto v2 = sf::Vertex(sf::Vector2f(FIELD_W, i * BLOCK_SIZE));
+        v1.color = v2.color = gridColor;
+        sf::Vertex line[] = {v1, v2};
+        window->draw(line, 2, sf::Lines);
+    }
+
+    // // desenha o grid vertical
+    for (int i = 0; i < COLUMNS+1; i ++)
+    {
+        auto v1 = sf::Vertex(sf::Vector2f(i * BLOCK_SIZE, 0));
+        auto v2 = sf::Vertex(sf::Vector2f(i * BLOCK_SIZE, FIELD_H));
+        v1.color = v2.color = gridColor;
+        sf::Vertex line[] = {v1, v2};
+        window->draw(line, 2, sf::Lines);
+    }
     
     // desenha os blocos do objeto em queda
     for (auto block : *turnForm->blocks)
@@ -45,28 +65,11 @@ void Game::draw()
         }
     }
 
-    // desenha o grid horizontal
-    for (int i = 0; i < LINES; i ++)
-    {
-        auto v1 = sf::Vertex(sf::Vector2f(0, i * BLOCK_SIZE));
-        auto v2 = sf::Vertex(sf::Vector2f(FIELD_W, i * BLOCK_SIZE));
-        v1.color = v2.color = gridColor;
-        sf::Vertex line[] = {v1, v2};
-        window->draw(line, 2, sf::Lines);
-    }
-
-    // desenha o grid vertical
-    for (int i = 0; i < COLUMNS; i ++)
-    {
-        auto v1 = sf::Vertex(sf::Vector2f(i * BLOCK_SIZE, 0));
-        auto v2 = sf::Vertex(sf::Vector2f(i * BLOCK_SIZE, FIELD_H));
-        v1.color = v2.color = gridColor;
-        sf::Vertex line[] = {v1, v2};
-        window->draw(line, 2, sf::Lines);
-    }
-    
     // desenha informações de debug
     if (debug_mode) {
+        sf::Font font;
+        font.loadFromFile("arial.ttf");
+        int i = 0;
         for (auto block : *turnForm->blocks)
         {
             auto pos = block->getPosition();
@@ -74,6 +77,16 @@ void Game::draw()
             rect.setPosition(pos.x * BLOCK_SIZE, pos.y * BLOCK_SIZE + BLOCK_SIZE);
             rect.setFillColor(sf::Color{230, 46, 0});
             window->draw(rect);
+
+            
+            auto text = sf::Text();
+            text.setFont(font);
+            text.setString(to_string(i));
+            text.setCharacterSize(24);
+            text.setFillColor(sf::Color::Red);
+            text.setPosition(pos.x * BLOCK_SIZE, pos.y * BLOCK_SIZE);
+            window->draw(text);
+            i++;
         }
         turnForm->debug(window);
     }
@@ -84,23 +97,13 @@ void Game::draw()
 
 void Game::gameLogic() {
     if (paused) return;
-    if (frozen) return;
     
     // handle velocity using cooldown
     if (--colldown > 0) return;
     colldown = MAX_FALL_COOLDOWN;
 
-    // the logic here is move the turn block down
-    bool collide = checkFallCollisions();
-    while (force_drop && !collide)
-    {
-        turnForm->move(0, 1);
-        collide = checkFallCollisions();
-    }
-    force_drop = false;
-        
     // if collide, handle some events
-    if (collide) {
+    if (checkFallCollisions()) {
 
         // add the turn block in matrix
         for (auto block : *turnForm->blocks)
@@ -153,6 +156,9 @@ bool Game::checkFallCollisions() {
         if (position.y < 0)
             continue; 
 
+        if (position.x < 0)
+            continue;
+
         // touch on floor
         if (LINES - position.y == 1)
             return true;
@@ -174,7 +180,12 @@ void Game::rotatePressed() {
 }
 
 void Game::dropPressed() {
-    force_drop = true;
+    auto collide = checkFallCollisions();
+    while (!collide)
+    {
+        turnForm->move(0, 1);
+        collide = checkFallCollisions();
+    }
 }
 
 void Game::movePressed(int direction) {
@@ -264,7 +275,9 @@ void Game::runAnimations() {
 }
 
 void Game::start() {
-    window = new sf::RenderWindow(sf::VideoMode(BLOCK_SIZE * COLUMNS, BLOCK_SIZE * LINES), "Tetris");
+    const int width = BLOCK_SIZE * COLUMNS + 300;
+    const int height = BLOCK_SIZE * LINES;
+    window = new sf::RenderWindow(sf::VideoMode(width, height), "Tetris");
     window->setVerticalSyncEnabled(true);
     window->setFramerateLimit(60);
     run();

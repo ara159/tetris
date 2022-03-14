@@ -9,21 +9,6 @@
 #include "Piece.hpp"
 #include "constants.hpp"
 
-enum class AnimationType: int { LineCompleted };
-
-class Animation
-{
-private:
-public:
-    int duration;
-    int line;
-    AnimationType anim_type;
-    Animation(int duration, int line, AnimationType anim_type);
-    ~Animation();
-    void run();
-    bool isCompleted();
-};
-
 class Game
 {
 private:
@@ -34,7 +19,6 @@ private:
     Piece* turnForm;
     bool debug_mode;
     bool force_drop;
-    bool frozen;
     std::vector<int> lines_completeds;
     bool checkFallCollisions();
     void reset();
