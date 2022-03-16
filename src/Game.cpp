@@ -24,7 +24,7 @@ Game::~Game()
 void Game::draw()
 {
     const auto gridColor = sf::Color{78, 25, 118};
-    const auto bgColor = sf::Color{98, 45, 138};
+    const auto bgColor = sf::Color{BG_COLOR};
     
     // limpa a tela
     window->clear(bgColor);
@@ -305,7 +305,7 @@ void Game::eventHandler() {
         {
             paused = !paused;
         }
-        if (!paused) {
+        if (!paused || debug_mode) {
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
             {
                 movePressed(-1);

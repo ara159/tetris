@@ -13,7 +13,7 @@ Piece::Piece()
     randomCreate();
     for (auto block : *blocks)
     {
-        block->setFillColor(sf::Color{255, 255, 255});
+        block->setFillColor(sf::Color{PIECE_COLOR});
     }
 }
 
@@ -147,18 +147,33 @@ void Piece::randomCreate() {
 }
 
 void Piece::rotate(double angle) {
-    for (auto block : *blocks)
+    int rotation[2][2] = {{0, 1}, {-1, 0}};
+
+    for (int i = 0; i < blocks->size(); i++)
     {
-        auto position = block->getPosition();
-        int x = (position.x - origin.x) * BLOCK_SIZE;
-        int y = (position.y - origin.y) * BLOCK_SIZE;
-        int new_x = x * cos(angle) - y * sin(angle) + origin.x * BLOCK_SIZE;
-        int new_y = x * sin(angle) + y * cos(angle) + origin.y * BLOCK_SIZE;
-        block->setPosition(new_x/BLOCK_SIZE, new_y/BLOCK_SIZE);
+        auto block = blocks->at(i);
+
+        float pos[2] = {block->getPosition().x - origin.x, block->getPosition().y - origin.y};
+        float x = 0;
+        float y = 0;
+        
+        for (int j = 0; j < 2; j++)
+        {
+            x += rotation[0][j] * pos[j];
+        }
+        
+        for (int j = 0; j < 2; j++)
+        {
+            y += rotation[1][j] * pos[j];
+        }
+
+        x += origin.x;
+        y += origin.y;
+        block->setPosition(x, y);
     }
     for (auto block : *blocks)
     {
-        block->move(-1, 0);
+        block->move(0, -1);
     }
 }
 
