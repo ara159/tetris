@@ -17,6 +17,7 @@ private:
     Block* blocks[COLUMNS][LINES];
     sf::RenderWindow* window;
     Piece* turnForm;
+    Piece* nextForm;
     bool debug_mode;
     bool force_drop;
     std::vector<int> lines_completeds;

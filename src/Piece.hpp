@@ -15,7 +15,7 @@ public:
     vector<Block*>* blocks;
     Piece();
     ~Piece();
-    void rotate(double angle);
+    void rotate();
     void debug(RenderWindow* window);
     void move(int x, int y);
 };

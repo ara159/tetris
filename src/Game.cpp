@@ -65,6 +65,26 @@ void Game::draw()
         }
     }
 
+    // desenha o predict
+    int size_p = 120;
+    auto rect = sf::RectangleShape(sf::Vector2f(120, 120));
+    rect.setFillColor(sf::Color{BG_COLOR});
+    rect.setOutlineColor(sf::Color::White);
+    rect.setOutlineThickness(2);
+    rect.setPosition(FIELD_W + EXTRA_W / 2 - size_p/2, FIELD_W/2 - size_p/2);
+    window->draw(rect);
+
+    const int predict_size = 20;
+    for (auto block : *nextForm->blocks)
+    {
+        auto bpos = block->getPosition();
+        auto rpos = rect.getPosition();
+        auto r = sf::RectangleShape(sf::Vector2f(predict_size, predict_size));
+        r.setPosition(bpos.x * predict_size + rpos.x + 30, bpos.y * predict_size + rpos.y + 120);
+        window->draw(r);
+    }
+    
+
     // desenha informações de debug
     if (debug_mode) {
         sf::Font font;
@@ -136,7 +156,8 @@ void Game::gameLogic() {
             }
         }
         
-        turnForm = new Piece();
+        turnForm = nextForm;
+        nextForm = new Piece();
         return;
     }
     else {
@@ -176,7 +197,7 @@ bool Game::checkFallCollisions() {
 }
 
 void Game::rotatePressed() {
-    turnForm->rotate(M_PI/2);
+    turnForm->rotate();
 }
 
 void Game::dropPressed() {
@@ -222,6 +243,7 @@ void Game::reset() {
     colldown = MAX_FALL_COOLDOWN;
     force_drop = false;
     turnForm = new Piece();
+    nextForm = new Piece();
     
     for (int i = 0; i < COLUMNS; i++)
     {
@@ -275,7 +297,7 @@ void Game::runAnimations() {
 }
 
 void Game::start() {
-    const int width = BLOCK_SIZE * COLUMNS + 300;
+    const int width = BLOCK_SIZE * COLUMNS + EXTRA_W;
     const int height = BLOCK_SIZE * LINES;
     window = new sf::RenderWindow(sf::VideoMode(width, height), "Tetris");
     window->setVerticalSyncEnabled(true);
@@ -305,7 +327,7 @@ void Game::eventHandler() {
         {
             paused = !paused;
         }
-        if (!paused || debug_mode) {
+        if (!paused) {
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
             {
                 movePressed(-1);
