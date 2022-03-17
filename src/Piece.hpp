@@ -10,7 +10,7 @@ class Piece
 {
 private:
     void randomCreate();
-    Vector2f origin;
+    Vector2f pivot;
 public:
     vector<Block*>* blocks;
     Piece();

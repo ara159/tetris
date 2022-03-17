@@ -27,6 +27,7 @@ private:
     void run();
     void gameLogic();
     void draw();
+    void drawPredict();
     void rotatePressed();
     void increaseVelocity();
     void dropPressed();

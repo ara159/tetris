@@ -34,7 +34,7 @@ void Piece::randomCreate() {
             0, 2,
             1, 2
         });
-        origin = sf::Vector2f(0.5f, 1.5f);
+        pivot = sf::Vector2f(0.5f, 1.5f);
         break;
     case PieceType::Cube:
         format = std::vector<int>({
@@ -43,7 +43,7 @@ void Piece::randomCreate() {
             1, 0,
             1, 1
         });
-        origin = sf::Vector2f(1, 1);
+        pivot = sf::Vector2f(1, 1);
         break;
     case PieceType::Line:
         format = std::vector<int>({
@@ -52,7 +52,7 @@ void Piece::randomCreate() {
             0, 3,
             0, 4
         });
-        origin = sf::Vector2f(0, 3);
+        pivot = sf::Vector2f(0, 3);
         break;
     case PieceType::LI:
         format = std::vector<int>({
@@ -61,7 +61,7 @@ void Piece::randomCreate() {
             1, 2,
             0, 2
         });
-        origin = sf::Vector2f(1.5f, 1.5f);
+        pivot = sf::Vector2f(1.5f, 1.5f);
         break;
     case PieceType::T:
         format = std::vector<int>({
@@ -70,7 +70,7 @@ void Piece::randomCreate() {
             3, 0,
             2, 1
         });
-        origin = sf::Vector2f(2.5f, 0.5f);
+        pivot = sf::Vector2f(2.5f, 0.5f);
         break;
     case PieceType::Z:
         format = std::vector<int>({
@@ -79,7 +79,7 @@ void Piece::randomCreate() {
             1, 0,
             2, 0
         });
-        origin = sf::Vector2f(1.5f, 1.5f);
+        pivot = sf::Vector2f(1.5f, 1.5f);
         break;
     case PieceType::ZI:
         format = std::vector<int>({
@@ -88,7 +88,7 @@ void Piece::randomCreate() {
             1, 1,
             2, 1
         });
-        origin = sf::Vector2f(1.5f, 1.5f);
+        pivot = sf::Vector2f(1.5f, 1.5f);
         break;
     }
     for (int i = 0; i < format.size(); i+=2)
@@ -96,9 +96,7 @@ void Piece::randomCreate() {
         auto block = new Block();
         block->setPosition(format.at(i), format.at(i+1));
         blocks->push_back(block);
-        block->move(0, -4);
     }
-    origin.y += -4;
 }
 
 void Piece::rotate() {
@@ -108,7 +106,7 @@ void Piece::rotate() {
     {
         auto block = blocks->at(i);
 
-        float pos[2] = {block->getPosition().x - origin.x, block->getPosition().y - origin.y};
+        float pos[2] = {block->getPosition().x - pivot.x, block->getPosition().y - pivot.y};
         float x = 0;
         float y = 0;
         
@@ -122,8 +120,8 @@ void Piece::rotate() {
             y += rotation[1][j] * pos[j];
         }
 
-        x += origin.x;
-        y += origin.y;
+        x += pivot.x;
+        y += pivot.y;
         block->setPosition(x, y);
     }
     for (auto block : *blocks)
@@ -136,7 +134,7 @@ void Piece::debug(sf::RenderWindow* window) {
     int points_radius = 2;
     auto origin_point = sf::CircleShape(points_radius);
     origin_point.setOrigin(points_radius, points_radius);
-    origin_point.setPosition(origin.x * BLOCK_SIZE, origin.y * BLOCK_SIZE);
+    origin_point.setPosition(pivot.x * BLOCK_SIZE, pivot.y * BLOCK_SIZE);
     origin_point.setFillColor(sf::Color::Green);
     window->draw(origin_point);
 }
@@ -147,6 +145,6 @@ void Piece::move(int x, int y)
     {
         block->move(x, y);
     }
-    origin.x += x;
-    origin.y += y;
+    pivot.x += x;
+    pivot.y += y;
 }
