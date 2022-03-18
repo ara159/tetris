@@ -8,6 +8,7 @@
 #include "Block.hpp"
 #include "Piece.hpp"
 #include "constants.hpp"
+#include "PredictArea.hpp"
 
 class Game
 {
@@ -21,18 +22,19 @@ private:
     bool debug_mode;
     bool force_drop;
     std::vector<int> lines_completeds;
+    PredictArea predict;
     bool checkFallCollisions();
     void reset();
     void runAnimations();
     void run();
     void gameLogic();
     void draw();
-    void drawPredict();
     void rotatePressed();
     void increaseVelocity();
     void dropPressed();
     void movePressed(int direction);
     void eventHandler();
+    void createForm();
 public:
     Game(bool debug);
     ~Game();

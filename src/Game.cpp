@@ -14,6 +14,7 @@ Game::Game(bool debug)
     this->paused = false;
     this->debug_mode = debug;
     this->lines_completeds = std::vector<int>();
+    this->predict = PredictArea();
     reset();
 }
 
@@ -65,7 +66,7 @@ void Game::draw()
         }
     }
 
-    drawPredict();
+    predict.draw(window);
 
     // desenha informações de debug
     if (debug_mode) {
@@ -95,62 +96,6 @@ void Game::draw()
 
     // exibe
     window->display();
-}
-
-void Game::drawPredict()
-{
-    const int p_block_size = 20;
-    const int size_box = p_block_size * 5;
-
-    auto box = sf::RectangleShape(sf::Vector2f(size_box, size_box));
-    box.setFillColor(sf::Color{BG_COLOR});
-    box.setOutlineColor(sf::Color::White);
-    box.setOutlineThickness(1);
-    box.setPosition(FIELD_W + EXTRA_W / 2, FIELD_W/2);
-    box.setOrigin(sf::Vector2f(size_box/2, size_box/2));
-    window->draw(box);
-
-    auto rpos = box.getPosition();
-    int offset_y = p_block_size * 1;
-    int offset_x = p_block_size * 1;
-
-    int min_x, min_y, max_x, max_y;
-    min_x = min_y = INT32_MAX;
-    max_x = max_y = INT32_MIN;
-
-    for (auto block : *nextForm->blocks)
-    {
-        auto pos = block->getPosition();
-        if(pos.x < min_x)
-        {
-            min_x = pos.x;
-        }
-        if(pos.x > max_x)
-        {
-            max_x = pos.x;
-        }
-        if(pos.y < min_y)
-        {
-            min_y = pos.y;
-        }
-        if(pos.y > max_y)
-        {
-            max_y = pos.y;
-        }
-    }
-
-    int dif_x = max_x - min_x + 1;
-    int dif_y = max_y - min_y + 1;
-
-    std::cout << dif_x << "," << dif_y << std::endl;
-
-    for (auto block : *nextForm->blocks)
-    {
-        auto bpos = block->getPosition();
-        auto p_block = sf::RectangleShape(sf::Vector2f(p_block_size, p_block_size));
-        p_block.setPosition(bpos.x * p_block_size + rpos.x - (dif_x * p_block_size)/2, bpos.y * p_block_size + rpos.y - (dif_y * p_block_size)/2);
-        window->draw(p_block);
-    }
 }
 
 void Game::gameLogic() {
@@ -193,9 +138,7 @@ void Game::gameLogic() {
                 return;
             }
         }
-        
-        turnForm = nextForm;
-        nextForm = new Piece();
+        createForm();
         return;
     }
     else {
@@ -277,11 +220,21 @@ void Game::movePressed(int direction) {
     turnForm->move(direction, 0);
 }
 
+void Game::createForm()
+{
+    if (nextForm == nullptr)
+        turnForm = new Piece();
+    else
+        turnForm = nextForm;
+    nextForm = new Piece();
+    turnForm->move(COLUMNS/2-1, -4);
+    predict.setNextForm(nextForm);
+}
+
 void Game::reset() {
     colldown = MAX_FALL_COOLDOWN;
     force_drop = false;
-    turnForm = new Piece();
-    nextForm = new Piece();
+    createForm();
     
     for (int i = 0; i < COLUMNS; i++)
     {

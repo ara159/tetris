@@ -7,7 +7,7 @@
 
 int main()
 {
-    Game* game = new Game(false);
+    Game* game = new Game(true);
     game->start();
     return 0;
 }

@@ -47,12 +47,12 @@ void Piece::randomCreate() {
         break;
     case PieceType::Line:
         format = std::vector<int>({
+            0, 0,
             0, 1,
             0, 2,
-            0, 3,
-            0, 4
+            0, 3
         });
-        pivot = sf::Vector2f(0, 3);
+        pivot = sf::Vector2f(0, 2);
         break;
     case PieceType::LI:
         format = std::vector<int>({
@@ -65,12 +65,12 @@ void Piece::randomCreate() {
         break;
     case PieceType::T:
         format = std::vector<int>({
+            0, 0,
             1, 0,
             2, 0,
-            3, 0,
-            2, 1
+            1, 1
         });
-        pivot = sf::Vector2f(2.5f, 0.5f);
+        pivot = sf::Vector2f(1.5f, 0.5f);
         break;
     case PieceType::Z:
         format = std::vector<int>({
