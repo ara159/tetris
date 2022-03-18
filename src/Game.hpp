@@ -9,6 +9,7 @@
 #include "Piece.hpp"
 #include "constants.hpp"
 #include "PredictArea.hpp"
+#include "Field.hpp"
 
 class Game
 {
@@ -23,6 +24,7 @@ private:
     bool force_drop;
     std::vector<int> lines_completeds;
     PredictArea predict;
+    Field field;
     bool checkFallCollisions();
     void reset();
     void runAnimations();

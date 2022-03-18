@@ -7,6 +7,7 @@
 #include "Piece.hpp"
 #include "constants.hpp"
 #include "Game.hpp"
+#include "Field.hpp"
 #include <string>
 
 Game::Game(bool debug)
@@ -15,6 +16,7 @@ Game::Game(bool debug)
     this->debug_mode = debug;
     this->lines_completeds = std::vector<int>();
     this->predict = PredictArea();
+    this->field = Field();
     reset();
 }
 
@@ -24,76 +26,13 @@ Game::~Game()
 
 void Game::draw()
 {
-    const auto gridColor = sf::Color{78, 25, 118};
     const auto bgColor = sf::Color{BG_COLOR};
     
     // limpa a tela
     window->clear(bgColor);
-    
-    // // desenha o grid horizontal
-    for (int i = 0; i < LINES; i ++)
-    {
-        auto v1 = sf::Vertex(sf::Vector2f(0, i * BLOCK_SIZE));
-        auto v2 = sf::Vertex(sf::Vector2f(FIELD_W, i * BLOCK_SIZE));
-        v1.color = v2.color = gridColor;
-        sf::Vertex line[] = {v1, v2};
-        window->draw(line, 2, sf::Lines);
-    }
-
-    // // desenha o grid vertical
-    for (int i = 0; i < COLUMNS+1; i ++)
-    {
-        auto v1 = sf::Vertex(sf::Vector2f(i * BLOCK_SIZE, 0));
-        auto v2 = sf::Vertex(sf::Vector2f(i * BLOCK_SIZE, FIELD_H));
-        v1.color = v2.color = gridColor;
-        sf::Vertex line[] = {v1, v2};
-        window->draw(line, 2, sf::Lines);
-    }
-    
-    // desenha os blocos do objeto em queda
-    for (auto block : *turnForm->blocks)
-    {
-        window->draw(*block);
-    }
-
-    // desenha os blocos
-    for (int i = 0; i < COLUMNS; i++)
-    {
-        for (int j = 0; j < LINES; j++)
-        {
-            if (blocks[i][j] == nullptr) continue; 
-            window->draw(*blocks[i][j]);
-        }
-    }
-
+    field.draw(window, blocks, *turnForm);
     predict.draw(window);
-
-    // desenha informações de debug
-    if (debug_mode) {
-        sf::Font font;
-        font.loadFromFile("arial.ttf");
-        int i = 0;
-        for (auto block : *turnForm->blocks)
-        {
-            auto pos = block->getPosition();
-            auto rect = sf::RectangleShape(sf::Vector2f(BLOCK_SIZE, 2));
-            rect.setPosition(pos.x * BLOCK_SIZE, pos.y * BLOCK_SIZE + BLOCK_SIZE);
-            rect.setFillColor(sf::Color{230, 46, 0});
-            window->draw(rect);
-
-            
-            auto text = sf::Text();
-            text.setFont(font);
-            text.setString(to_string(i));
-            text.setCharacterSize(24);
-            text.setFillColor(sf::Color::Red);
-            text.setPosition(pos.x * BLOCK_SIZE, pos.y * BLOCK_SIZE);
-            window->draw(text);
-            i++;
-        }
-        turnForm->debug(window);
-    }
-
+    
     // exibe
     window->display();
 }
@@ -288,8 +227,8 @@ void Game::runAnimations() {
 }
 
 void Game::start() {
-    const int width = BLOCK_SIZE * COLUMNS + EXTRA_W;
-    const int height = BLOCK_SIZE * LINES;
+    const int width = BLOCK_SIZE * (COLUMNS + 2) + EXTRA_W;
+    const int height = BLOCK_SIZE * (LINES + 2);
     window = new sf::RenderWindow(sf::VideoMode(width, height), "Tetris");
     window->setVerticalSyncEnabled(true);
     window->setFramerateLimit(60);

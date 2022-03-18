@@ -11,10 +11,6 @@ Piece::Piece()
 {
     this->blocks = new std::vector<Block*>();
     randomCreate();
-    for (auto block : *blocks)
-    {
-        block->setFillColor(sf::Color{PIECE_COLOR});
-    }
 }
 
 Piece::~Piece()
@@ -24,6 +20,7 @@ Piece::~Piece()
 void Piece::randomCreate() {
     PieceType block_type = static_cast<PieceType>(rand() % 7);
     std::vector<int> format;
+    Color color;
 
     switch (block_type)
     {
@@ -91,10 +88,31 @@ void Piece::randomCreate() {
         pivot = sf::Vector2f(1.5f, 1.5f);
         break;
     }
+
+    switch (rand() % 5)
+    {
+    case 0:
+        color = Color{251, 255, 36};
+        break;
+    case 1:
+        color = Color{255, 120, 36};
+        break;
+    case 2:
+        color = Color{35, 212, 19};
+        break;
+    case 3:
+        color = Color{0, 229, 255};
+        break;
+    case 4:
+        color = Color{255, 0, 25};
+        break;
+    }
+
     for (int i = 0; i < format.size(); i+=2)
     {
         auto block = new Block();
         block->setPosition(format.at(i), format.at(i+1));
+        block->setFillColor(color);
         blocks->push_back(block);
     }
 }

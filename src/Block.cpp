@@ -5,7 +5,7 @@
 using namespace sf;
 using namespace std;
 
-Block::Block() : RectangleShape(Vector2f(BLOCK_SIZE-1, BLOCK_SIZE-1))
+Block::Block() : RectangleShape(Vector2f(BLOCK_SIZE, BLOCK_SIZE))
 {
 }
 
