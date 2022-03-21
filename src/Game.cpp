@@ -32,7 +32,7 @@ void Game::draw()
     window->clear(bgColor);
     field.draw(window, blocks, *turnForm);
     predict.draw(window);
-    
+
     // exibe
     window->display();
 }
@@ -117,7 +117,36 @@ bool Game::checkFallCollisions() {
 }
 
 void Game::rotatePressed() {
-    turnForm->rotate();
+    int space = 0;
+
+    if (turnForm->shape == PieceType::L || turnForm->shape == PieceType::LI)
+    {
+        space = 1;
+    }
+
+    if (turnForm->pivot.x < space - 1)
+    {
+        turnForm->move(space, 0);
+        return;
+    }
+    else
+    if (turnForm->pivot.x > COLUMNS - 1 - space)
+    {
+        turnForm->move(-space, 0);
+        return;
+    }
+
+    turnForm->rotate(Rotation::CLOCKWISE);
+
+    for (auto block : *turnForm->blocks)
+    {
+        auto other = blocks[block->getPosition().x][block->getPosition().y];
+        if (other != nullptr)
+        {
+            turnForm->rotate(Rotation::COUNTER_CLOCKWISE);
+            return;
+        }
+    }
 }
 
 void Game::dropPressed() {
@@ -201,9 +230,9 @@ void Game::runAnimations() {
                 {
                     auto block = blocks[j][line];
                     auto color = block->getFillColor();
-                    Uint8 r = color.r - ((255 - 98) / (duration/tx));
-                    Uint8 g = color.g - ((255 - 45) / (duration/tx));
-                    Uint8 b = color.b - ((255 - 138) / (duration/tx));
+                    Uint8 r = color.r - (255 / (duration/tx));
+                    Uint8 g = color.g - (255 / (duration/tx));
+                    Uint8 b = color.b - (255 / (duration/tx));
                     block->setFillColor(Color{r, g, b});
                 }
             }
@@ -257,7 +286,7 @@ void Game::eventHandler() {
         {
             paused = !paused;
         }
-        if (!paused) {
+        if (!paused || debug_mode) {
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
             {
                 movePressed(-1);

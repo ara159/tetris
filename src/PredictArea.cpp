@@ -11,7 +11,7 @@ PredictArea::PredictArea()
 {
     box_area = 100;
     block_size = 20;
-    box_pos[0] = FIELD_W + EXTRA_W / 2;
+    box_pos[0] = FIELD_W + EXTRA_W / 2 + BLOCK_SIZE * 1.5;
     box_pos[1] = FIELD_H * 0.2f;
 }
 
@@ -60,7 +60,8 @@ void PredictArea::draw(RenderWindow* window)
         
         // create shape
         auto b = RectangleShape(Vector2f(block_size, block_size));
-        b.setOutlineThickness(1);
+        b.setFillColor(block->getFillColor());
+        b.setOutlineThickness(2);
         b.setOutlineColor(Color{BG_COLOR});
 
         offset[0] = box_pos[0] - (diff[0] * block_size)/2;

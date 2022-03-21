@@ -18,11 +18,13 @@ Piece::~Piece()
 }
 
 void Piece::randomCreate() {
-    PieceType block_type = static_cast<PieceType>(rand() % 7);
+    shape = static_cast<PieceType>(rand() % 7);
+    shape = PieceType::L;
+    
     std::vector<int> format;
     Color color;
-
-    switch (block_type)
+    
+    switch (shape)
     {
     case PieceType::L:
         format = std::vector<int>({
@@ -117,8 +119,23 @@ void Piece::randomCreate() {
     }
 }
 
-void Piece::rotate() {
-    int rotation[2][2] = {{0, 1}, {-1, 0}};
+void Piece::rotate(Rotation way) {
+    int rotation[2][2];
+    
+    rotation[0][0] = 0;
+    rotation[1][1] = 0;
+
+    if (way == Rotation::CLOCKWISE)
+    {
+        rotation[0][1] = -1;
+        rotation[1][0] = 1;
+    }
+
+    if (way == Rotation::COUNTER_CLOCKWISE)
+    {
+        rotation[0][1] = 1;
+        rotation[1][0] = -1;
+    }
 
     for (int i = 0; i < blocks->size(); i++)
     {
