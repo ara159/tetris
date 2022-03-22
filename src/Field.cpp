@@ -44,6 +44,45 @@ void Field::draw(RenderWindow* window, Block* blocks[COLUMNS][LINES], Piece turn
         }
     }
 
+    Block bcopy[turn.blocks->size()];
+    for (int i = 0; i < turn.blocks->size(); i++)
+    {
+        bcopy[i] = *turn.blocks->at(i);
+    }
+
+    while (true)
+    {
+        for (int i = 0; i < turn.blocks->size(); i++)
+        {
+            bcopy[i].move(0, 1);
+        }
+        bool stop = false;
+        for (int i = 0; i < turn.blocks->size(); i++)
+        {
+            pos = bcopy[i].getPosition();
+            if (pos.y >= LINES - 1 || blocks[pos.x][pos.y + 1] != nullptr)
+            {
+                stop = true;
+                break;
+            }
+        }
+        if (stop)
+        {
+            for (int i = 0; i < turn.blocks->size(); i++)
+            {
+                pos = bcopy[i].getPosition();
+                if (pos.y >= LINES || blocks[pos.x][pos.y] != nullptr) continue;
+                bcopy[i].setPosition(pos.x + offset[0], pos.y + offset[1]);
+                bcopy[i].setSize(Vector2f(bcopy[i].getSize().x, bcopy[i].getSize().y));
+                auto c = bcopy->getFillColor();
+                bcopy[i].setFillColor(Color{c.r, c.g, c.b, 56});
+                window->draw(bcopy[i]);
+            }
+            break;
+        }
+    }
+
+    // desenha a peça atual
     for (auto tblock : *turn.blocks)
     {
         block = *tblock;

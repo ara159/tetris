@@ -34,9 +34,6 @@ void Game::draw()
     field.draw(window, blocks, *turnForm);
     predict.draw(window);
     
-    if (debug_mode)
-        field.draw_debug(window, blocks, *turnForm);
-
     // exibe
     window->display();
 }
