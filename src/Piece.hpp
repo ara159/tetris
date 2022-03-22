@@ -4,17 +4,18 @@
 
 using namespace std;
 using namespace sf;
-enum class PieceType: int { L = 0, LI, T, Z, ZI, Line, Cube, CompleteLine };
+enum class PieceStyle: int { L = 0, J, T, Z, S, I, O, CompleteLine };
 enum class Rotation: int { CLOCKWISE, COUNTER_CLOCKWISE };
 
 class Piece
 {
 private:
-    void randomCreate();
+    void create_blocks();
 public:
     Vector2f pivot;
     vector<Block*>* blocks;
-    PieceType shape;
+    PieceStyle style;
+    int rotation_state;
     Piece();
     ~Piece();
     void rotate(Rotation way);

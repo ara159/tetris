@@ -18,6 +18,7 @@ public:
     Field();
     ~Field();
     void draw(RenderWindow* window, Block* blocks[COLUMNS][LINES], Piece turn);
+    void draw_debug(RenderWindow* window, Block* blocks[COLUMNS][LINES], Piece turn);
 };
 
 #endif

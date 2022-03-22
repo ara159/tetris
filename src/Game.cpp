@@ -30,8 +30,12 @@ void Game::draw()
     
     // limpa a tela
     window->clear(bgColor);
+
     field.draw(window, blocks, *turnForm);
     predict.draw(window);
+    
+    if (debug_mode)
+        field.draw_debug(window, blocks, *turnForm);
 
     // exibe
     window->display();
@@ -116,37 +120,99 @@ bool Game::checkFallCollisions() {
     return false;
 }
 
-void Game::rotatePressed() {
-    int space = 0;
-
-    if (turnForm->shape == PieceType::L || turnForm->shape == PieceType::LI)
-    {
-        space = 1;
-    }
-
-    if (turnForm->pivot.x < space - 1)
-    {
-        turnForm->move(space, 0);
-        return;
-    }
-    else
-    if (turnForm->pivot.x > COLUMNS - 1 - space)
-    {
-        turnForm->move(-space, 0);
-        return;
-    }
-
-    turnForm->rotate(Rotation::CLOCKWISE);
-
+bool Game::rotateCollision()
+{
     for (auto block : *turnForm->blocks)
     {
-        auto other = blocks[block->getPosition().x][block->getPosition().y];
-        if (other != nullptr)
+        auto pos = block->getPosition();
+        if (pos.x >= COLUMNS || pos.x < 0 || pos.y >= LINES || blocks[pos.x][pos.y] != nullptr)
         {
-            turnForm->rotate(Rotation::COUNTER_CLOCKWISE);
+            return true;
+        }
+    }
+    return false;
+}
+
+void Game::rotatePressed() {
+    if (turnForm->style == PieceStyle::O)
+    {
+        return;
+    }
+
+    int s = turnForm->rotation_state;    
+    turnForm->rotate(Rotation::CLOCKWISE);
+
+    // no collisions, there's no need to use kicks
+    if (!rotateCollision())
+    { 
+        return;
+    }
+    
+    int tests[4][4][2];
+
+    if (turnForm->style == PieceStyle::I)
+    {
+        int x[4][4] = {
+            {-2, 1, -2, 1},
+            {-1, 2, -1, 2},
+            {2, -1, 2, -1},
+            {1, -2, 1, -2}
+        };
+        int y[4][4] = {
+            {0, 0, 1, -2},
+            {0, 0, -2, 1},
+            {0, 0, -1, 2},
+            {0, 0, 2, 1}
+        };
+        for (int i = 0; i < 4; i++)
+        {
+            for (int j = 0; j < 4; j++)
+            {
+                tests[i][j][0] = x[i][j];
+                tests[i][j][1] = y[i][j];
+            }
+        }
+    }
+    else
+    {
+        int x[4][4] = {
+            {-1, -1, 0, -1},
+            {1, 1, 0, 1},
+            {1, 1, 0, 1},
+            {-1, -1, 0, -1}
+        };
+        int y[4][4] = {
+            {0, -1, 2, 2},
+            {0, 1, -2, -2},
+            {0, -1, 2, 2},
+            {0, 1, -2, -2}
+        };
+        for (int i = 0; i < 4; i++)
+        {
+            for (int j = 0; j < 4; j++)
+            {
+                tests[i][j][0] = x[i][j];
+                tests[i][j][1] = y[i][j];
+            }
+        }
+    }
+
+    for (int i = 0; i < 5; i++)
+    {
+        turnForm->move(tests[s][i][0], tests[s][i][1]);
+        if (rotateCollision())
+        {
+            // fail - move to original position
+            turnForm->move(-tests[s][i][0], -tests[s][i][1]);
+        }
+        else
+        {
             return;
         }
     }
+
+    // rotation fail
+    turnForm->rotate(Rotation::COUNTER_CLOCKWISE);
 }
 
 void Game::dropPressed() {

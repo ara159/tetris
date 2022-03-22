@@ -69,3 +69,11 @@ void Field::draw(RenderWindow* window, Block* blocks[COLUMNS][LINES], Piece turn
         window->draw(line);
     }
 }
+
+void Field::draw_debug(RenderWindow* window, Block* blocks[COLUMNS][LINES], Piece turn)
+{
+    auto pivot = CircleShape(2.0f);
+    pivot.setPosition(turn.pivot.x * BLOCK_SIZE + margin[0], turn.pivot.y * BLOCK_SIZE + margin[1]);
+    pivot.setFillColor(Color::Green);
+    window->draw(pivot);
+}

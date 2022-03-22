@@ -37,6 +37,7 @@ private:
     void movePressed(int direction);
     void eventHandler();
     void createForm();
+    bool rotateCollision();
 public:
     Game(bool debug);
     ~Game();

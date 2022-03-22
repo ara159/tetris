@@ -9,85 +9,86 @@
 
 Piece::Piece()
 {
-    this->blocks = new std::vector<Block*>();
-    randomCreate();
+    blocks = new vector<Block*>();
+    style = static_cast<PieceStyle>(rand() % 7);
+    rotation_state = 0;
+    create_blocks();
 }
 
 Piece::~Piece()
 {
 }
 
-void Piece::randomCreate() {
-    shape = static_cast<PieceType>(rand() % 7);
-    shape = PieceType::L;
+void Piece::create_blocks() {
+    style = PieceStyle::I;
     
-    std::vector<int> format;
+    vector<int> format;
     Color color;
     
-    switch (shape)
+    switch (style)
     {
-    case PieceType::L:
-        format = std::vector<int>({
-            0, 0,
+    case PieceStyle::J:
+        format = vector<int>({
             0, 1,
-            0, 2,
-            1, 2
+            1, 1,
+            2, 1,
+            0, 0
         });
-        pivot = sf::Vector2f(0.5f, 1.5f);
+        pivot = Vector2f(1.5f, 1.5f);
         break;
-    case PieceType::Cube:
-        format = std::vector<int>({
+    case PieceStyle::L:
+        format = vector<int>({
+            0, 1,
+            1, 1,
+            2, 1,
+            2, 0
+        });
+        pivot = Vector2f(1.5f, 1.5f);
+        break;
+    case PieceStyle::O:
+        format = vector<int>({
             0, 0,
             0, 1,
             1, 0,
             1, 1
         });
-        pivot = sf::Vector2f(1, 1);
+        pivot = Vector2f(1, 1);
         break;
-    case PieceType::Line:
-        format = std::vector<int>({
-            0, 0,
-            0, 1,
-            0, 2,
-            0, 3
-        });
-        pivot = sf::Vector2f(0, 2);
-        break;
-    case PieceType::LI:
-        format = std::vector<int>({
-            1, 0,
-            1, 1,
-            1, 2,
-            0, 2
-        });
-        pivot = sf::Vector2f(1.5f, 1.5f);
-        break;
-    case PieceType::T:
-        format = std::vector<int>({
+    case PieceStyle::I:
+        format = vector<int>({
             0, 0,
             1, 0,
             2, 0,
-            1, 1
+            3, 0
         });
-        pivot = sf::Vector2f(1.5f, 0.5f);
+        pivot = Vector2f(2, 1);
         break;
-    case PieceType::Z:
-        format = std::vector<int>({
+    case PieceStyle::T:
+        format = vector<int>({
             0, 1,
             1, 1,
-            1, 0,
-            2, 0
+            2, 1,
+            1, 0
         });
-        pivot = sf::Vector2f(1.5f, 1.5f);
+        pivot = Vector2f(1.5f, 1.5f);
         break;
-    case PieceType::ZI:
-        format = std::vector<int>({
+    case PieceStyle::Z:
+        format = vector<int>({
             0, 0,
             1, 0,
             1, 1,
             2, 1
         });
-        pivot = sf::Vector2f(1.5f, 1.5f);
+        pivot = Vector2f(1.5f, 1.5f);
+        break;
+    case PieceStyle::S:
+        format = vector<int>({
+            0, 1,
+            1, 1,
+            1, 0,
+            2, 0
+        });
+        pivot = Vector2f(1.5f, 1.5f);
         break;
     }
 
@@ -161,16 +162,23 @@ void Piece::rotate(Rotation way) {
     }
     for (auto block : *blocks)
     {
-        block->move(0, -1);
+        if (way == Rotation::CLOCKWISE)
+            block->move(-1, 0);
+        else
+            block->move(0, -1);
     }
+    if (way == Rotation::CLOCKWISE)
+        rotation_state = (rotation_state + 1) % 4;
+    else
+        rotation_state = (rotation_state - 1) % 4;
 }
 
-void Piece::debug(sf::RenderWindow* window) {
+void Piece::debug(RenderWindow* window) {
     int points_radius = 2;
-    auto origin_point = sf::CircleShape(points_radius);
+    auto origin_point = CircleShape(points_radius);
     origin_point.setOrigin(points_radius, points_radius);
     origin_point.setPosition(pivot.x * BLOCK_SIZE, pivot.y * BLOCK_SIZE);
-    origin_point.setFillColor(sf::Color::Green);
+    origin_point.setFillColor(Color::Green);
     window->draw(origin_point);
 }
 
