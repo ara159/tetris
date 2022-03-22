@@ -41,7 +41,7 @@ void Game::draw()
     window->display();
 }
 
-void Game::gameLogic() {
+void Game::game_logic() {
     if (paused) return;
     
     // handle velocity using cooldown
@@ -49,7 +49,7 @@ void Game::gameLogic() {
     colldown = MAX_FALL_COOLDOWN;
 
     // if collide, handle some events
-    if (checkFallCollisions()) {
+    if (check_fall_collisions()) {
 
         // add the turn block in matrix
         for (auto block : *turnForm->blocks)
@@ -81,7 +81,7 @@ void Game::gameLogic() {
                 return;
             }
         }
-        createForm();
+        create_form();
         return;
     }
     else {
@@ -89,38 +89,27 @@ void Game::gameLogic() {
     }
 }
 
-bool Game::checkFallCollisions() {
-    sf::Vector2i position;
-    Block* candidate;
-
+bool Game::check_fall_collisions() {
     for (auto block : *turnForm->blocks)
     {
-        position = block->getPosition();
+        auto pos = block->getPosition();
 
         // pre game
-        if (position.y < 0)
-            continue; 
-
-        if (position.x < 0)
+        if (pos.y < 0 || pos.x < 0)
+        {
             continue;
-
+        }
+        
         // touch on floor
-        if (LINES - position.y == 1)
+        if (pos.y == LINES - 1 || blocks[pos.x][pos.y + 1] != nullptr)
+        {
             return true;
-        
-        candidate = blocks[position.x][position.y + 1];
-        
-        if (candidate == nullptr)
-            continue;
-        
-        // touch another block
-        if (candidate->getPosition().y == (position.y + 1))
-            return true;
+        }
     }
     return false;
 }
 
-bool Game::rotateCollision()
+bool Game::check_collision()
 {
     for (auto block : *turnForm->blocks)
     {
@@ -133,7 +122,7 @@ bool Game::rotateCollision()
     return false;
 }
 
-void Game::rotatePressed() {
+void Game::rotate_pressed() {
     if (turnForm->style == PieceStyle::O)
     {
         return;
@@ -143,7 +132,7 @@ void Game::rotatePressed() {
     turnForm->rotate(Rotation::CLOCKWISE);
 
     // no collisions, there's no need to use kicks
-    if (!rotateCollision())
+    if (!check_collision())
     { 
         return;
     }
@@ -200,7 +189,7 @@ void Game::rotatePressed() {
     for (int i = 0; i < 5; i++)
     {
         turnForm->move(tests[s][i][0], tests[s][i][1]);
-        if (rotateCollision())
+        if (check_collision())
         {
             // fail - move to original position
             turnForm->move(-tests[s][i][0], -tests[s][i][1]);
@@ -215,16 +204,16 @@ void Game::rotatePressed() {
     turnForm->rotate(Rotation::COUNTER_CLOCKWISE);
 }
 
-void Game::dropPressed() {
-    auto collide = checkFallCollisions();
+void Game::drop_pressed() {
+    auto collide = check_fall_collisions();
     while (!collide)
     {
         turnForm->move(0, 1);
-        collide = checkFallCollisions();
+        collide = check_fall_collisions();
     }
 }
 
-void Game::movePressed(int direction) {
+void Game::move_pressed(int direction) {
     sf::Vector2i position;
     Block *candidate;
     
@@ -254,7 +243,7 @@ void Game::movePressed(int direction) {
     turnForm->move(direction, 0);
 }
 
-void Game::createForm()
+void Game::create_form()
 {
     if (nextForm == nullptr)
         turnForm = new Piece();
@@ -268,7 +257,7 @@ void Game::createForm()
 void Game::reset() {
     colldown = MAX_FALL_COOLDOWN;
     force_drop = false;
-    createForm();
+    create_form();
     
     for (int i = 0; i < COLUMNS; i++)
     {
@@ -279,7 +268,7 @@ void Game::reset() {
     }
 }
 
-void Game::runAnimations() {
+void Game::run_animations() {
     // animação de linha completa
     if (lines_completeds.size() > 0)
     {
@@ -333,14 +322,14 @@ void Game::start() {
 void Game::run() {
     while (window->isOpen())
     {
-        eventHandler();
-        runAnimations();
-        gameLogic();
+        event_handler();
+        run_animations();
+        game_logic();
         draw();
     }
 }
 
-void Game::eventHandler() {
+void Game::event_handler() {
     sf::Event event;
     while (window->pollEvent(event))
     {
@@ -355,19 +344,19 @@ void Game::eventHandler() {
         if (!paused || debug_mode) {
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
             {
-                movePressed(-1);
+                move_pressed(-1);
             }
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
             {
-                movePressed(1);
+                move_pressed(1);
             }
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
             {
-                dropPressed();
+                drop_pressed();
             }
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space)
             {
-                rotatePressed();
+                rotate_pressed();
             }
         }
     }
