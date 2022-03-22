@@ -44,7 +44,9 @@ void Field::draw(RenderWindow* window, Block* blocks[COLUMNS][LINES], Piece turn
         }
     }
 
+    // desenha o local onde o bloco irá cair
     Block bcopy[turn.blocks->size()];
+    
     for (int i = 0; i < turn.blocks->size(); i++)
     {
         bcopy[i] = *turn.blocks->at(i);
@@ -56,7 +58,9 @@ void Field::draw(RenderWindow* window, Block* blocks[COLUMNS][LINES], Piece turn
         {
             bcopy[i].move(0, 1);
         }
+        
         bool stop = false;
+        
         for (int i = 0; i < turn.blocks->size(); i++)
         {
             pos = bcopy[i].getPosition();
@@ -66,16 +70,17 @@ void Field::draw(RenderWindow* window, Block* blocks[COLUMNS][LINES], Piece turn
                 break;
             }
         }
+        
         if (stop)
         {
             for (int i = 0; i < turn.blocks->size(); i++)
             {
                 pos = bcopy[i].getPosition();
-                if (pos.y >= LINES || blocks[pos.x][pos.y] != nullptr) continue;
+                if (pos.y < 0 || pos.y >= LINES || blocks[pos.x][pos.y] != nullptr) continue;
                 bcopy[i].setPosition(pos.x + offset[0], pos.y + offset[1]);
                 bcopy[i].setSize(Vector2f(bcopy[i].getSize().x, bcopy[i].getSize().y));
                 auto c = bcopy->getFillColor();
-                bcopy[i].setFillColor(Color{c.r, c.g, c.b, 56});
+                bcopy[i].setFillColor(Color{c.r, c.g, c.b, 28});
                 window->draw(bcopy[i]);
             }
             break;
@@ -107,12 +112,4 @@ void Field::draw(RenderWindow* window, Block* blocks[COLUMNS][LINES], Piece turn
         line.setPosition(margin[0] + i * BLOCK_SIZE, margin[1]);
         window->draw(line);
     }
-}
-
-void Field::draw_debug(RenderWindow* window, Block* blocks[COLUMNS][LINES], Piece turn)
-{
-    auto pivot = CircleShape(2.0f);
-    pivot.setPosition(turn.pivot.x * BLOCK_SIZE + margin[0], turn.pivot.y * BLOCK_SIZE + margin[1]);
-    pivot.setFillColor(Color::Green);
-    window->draw(pivot);
 }

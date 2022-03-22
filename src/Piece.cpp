@@ -20,8 +20,6 @@ Piece::~Piece()
 }
 
 void Piece::create_blocks() {
-    style = PieceStyle::I;
-    
     vector<int> format;
     Color color;
     
@@ -117,6 +115,11 @@ void Piece::create_blocks() {
         block->setPosition(format.at(i), format.at(i+1));
         block->setFillColor(color);
         blocks->push_back(block);
+    }
+
+    for (int i = 0; i < rand() % 4; i++)
+    {
+        rotate(Rotation::CLOCKWISE);
     }
 }
 
