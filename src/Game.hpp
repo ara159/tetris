@@ -10,6 +10,7 @@
 #include "Field.hpp"
 #include "Score.hpp"
 #include "Predict.hpp"
+#include "Cooldown.hpp"
 
 using namespace sf;
 using namespace std;
@@ -17,7 +18,8 @@ using namespace std;
 class Game
 {
 private:
-    int colldown;
+    Cooldown fall_cdwn;
+    Cooldown prep_cdwn;
     bool paused;
     Block* blocks[COLUMNS][LINES];
     RenderWindow* window;

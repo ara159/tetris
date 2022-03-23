@@ -34,10 +34,8 @@ void Predict::draw(RenderWindow* window)
         auto pos = block->getPosition();
         
         // create shape
-        auto b = RectangleShape(Vector2f(block_size, block_size));
+        auto b = RectangleShape(Vector2f(block_size - 2, block_size - 2));
         b.setFillColor(block->getFillColor());
-        b.setOutlineThickness(2);
-        b.setOutlineColor(Color{BG_COLOR});
         b.setPosition(
             pos.x * block_size + position.x + size - h_size - (size - h_size) / 2, // x
             pos.y * block_size + position.y + size - v_size - (size - v_size) / 2  // y

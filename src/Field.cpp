@@ -26,7 +26,7 @@ void Field::draw(RenderWindow* window, Block* blocks[COLUMNS][LINES], Piece turn
     RectangleShape line = RectangleShape();
     line.setFillColor(grid_color);
     
-    // desenha os blocos
+    // draws blocks
     Block block;
     Vector2i pos;
     auto box_pos = box.getPosition();
@@ -46,7 +46,7 @@ void Field::draw(RenderWindow* window, Block* blocks[COLUMNS][LINES], Piece turn
         }
     }
 
-    // desenha o local onde o bloco irá cair
+    // draws the block preview
     Block bcopy[turn.blocks->size()];
     
     for (int i = 0; i < turn.blocks->size(); i++)
@@ -56,13 +56,8 @@ void Field::draw(RenderWindow* window, Block* blocks[COLUMNS][LINES], Piece turn
 
     while (true)
     {
-        for (int i = 0; i < turn.blocks->size(); i++)
-        {
-            bcopy[i].move(0, 1);
-        }
-        
         bool stop = false;
-        
+
         for (int i = 0; i < turn.blocks->size(); i++)
         {
             pos = bcopy[i].getPosition();
@@ -72,7 +67,6 @@ void Field::draw(RenderWindow* window, Block* blocks[COLUMNS][LINES], Piece turn
                 break;
             }
         }
-        
         if (stop)
         {
             for (int i = 0; i < turn.blocks->size(); i++)
@@ -87,9 +81,16 @@ void Field::draw(RenderWindow* window, Block* blocks[COLUMNS][LINES], Piece turn
             }
             break;
         }
+        else
+        {
+            for (int i = 0; i < turn.blocks->size(); i++)
+            {
+                bcopy[i].move(0, 1);
+            }        
+        }
     }
 
-    // desenha a peça atual
+    // draws current piece
     for (auto tblock : *turn.blocks)
     {
         block = *tblock;
@@ -99,7 +100,7 @@ void Field::draw(RenderWindow* window, Block* blocks[COLUMNS][LINES], Piece turn
         window->draw(block);
     }
 
-    // desenha o grid horizontal
+    // draws horizontal grid
     for (int i = 0; i < LINES + 1; i ++)
     {
         line.setSize(Vector2f(COLUMNS * BLOCK_SIZE, 2));
@@ -107,7 +108,7 @@ void Field::draw(RenderWindow* window, Block* blocks[COLUMNS][LINES], Piece turn
         window->draw(line);
     }
 
-    // desenha o grid vertical
+    // draws vertical grid
     for (int i = 0; i < COLUMNS + 1; i ++)
     {
         line.setSize(Vector2f(2, LINES * BLOCK_SIZE));

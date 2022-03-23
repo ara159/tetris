@@ -26,6 +26,7 @@ Game::Game()
     this->predict = Predict(ppredi, 100);
     this->score = Score(pscore);
     this->size = Vector2i(ppredi.x + 100 + BLOCK_SIZE, pfield.y + sfield.y + BLOCK_SIZE);
+    this->prep_cdwn = Cooldown(30, false);
 
     reset();
 }
@@ -50,13 +51,16 @@ void Game::draw()
 }
 
 void Game::game_logic() {
-    if (paused) return;
+    if (paused)
+        return;
+
+    if (!prep_cdwn.check())
+        return;
     
     // handle velocity using cooldown
-    if (--colldown > 0) return;
+    if (!fall_cdwn.check())
+        return;
     
-    colldown = score.cooldown();
-
     // if collide, handle some events
     if (check_fall_collisions())
     {
@@ -259,15 +263,18 @@ void Game::create_form()
         actual = new Piece();
     else
         actual = next;
+    
     next = new Piece();
-    actual->move(COLUMNS/2-1, -4);
+    actual->move(COLUMNS/2-1, - actual->size().y - 2);
     predict.set_next_piece(next);
+    prep_cdwn.reset();
 }
 
 void Game::reset() {
     score.reset();
-    colldown = score.cooldown();
     force_drop = false;
+    prep_cdwn.reset();
+    fall_cdwn = Cooldown(score.cooldown(), true);
     create_form();
     
     for (int i = 0; i < COLUMNS; i++)
@@ -331,10 +338,10 @@ void Game::start() {
 void Game::run() {
     while (window->isOpen())
     {
-        event_handler();
-        run_animations();
         game_logic();
+        event_handler();
         draw();
+        run_animations();
     }
 }
 
@@ -351,23 +358,22 @@ void Game::event_handler() {
         {
             paused = !paused;
         }
-        if (!paused) {
-            if (Keyboard::isKeyPressed(Keyboard::Left))
-            {
+        if (!paused && event.type == Event::KeyPressed)
+        {
+            if (event.key.code == Keyboard::Left)
                 move_pressed(-1);
-            }
-            if (Keyboard::isKeyPressed(Keyboard::Right))
-            {
+            
+            if (event.key.code == Keyboard::Right)
                 move_pressed(1);
-            }
-            if (Keyboard::isKeyPressed(Keyboard::Down))
-            {
-                drop_pressed();
-            }
-            if (event.type == Event::KeyPressed && event.key.code == Keyboard::Space)
-            {
+
+            if (event.key.code == Keyboard::Space)
                 rotate_pressed();
-            }
+        }
+    }
+    if (!paused) {
+        if (Keyboard::isKeyPressed(Keyboard::Down))
+        {
+            fall_cdwn.set_remaining(1);
         }
     }
 }

@@ -9,7 +9,7 @@ Score::Score() {}
 Score::Score(Vector2i position)
 {
     font = Font();
-    if (!font.loadFromFile("arial.ttf"))
+    if (!font.loadFromFile("Tetris.ttf"))
     {
         std::cout << "Error on loading file 'arial.ttf'" << std::endl;
     }
@@ -67,10 +67,12 @@ void Score::draw(RenderWindow* window)
     Text text_lines("LINES: " + std::to_string(lines), font);
     text_lines.setCharacterSize(18);
     text_lines.setPosition(position.x, position.y);
+    text_lines.setStyle(Text::Bold);
     window->draw(text_lines);
 
     Text text_level("LEVEL: " + std::to_string(level), font);
     text_level.setCharacterSize(18);
     text_level.setPosition(position.x, position.y + 20);
+    text_level.setStyle(Text::Bold);
     window->draw(text_level);
 }
