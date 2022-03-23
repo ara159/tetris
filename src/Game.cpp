@@ -17,6 +17,7 @@ Game::Game(bool debug)
     this->lines_completeds = std::vector<int>();
     this->predict = PredictArea();
     this->field = Field();
+    this->score = Score();
     reset();
 }
 
@@ -33,6 +34,7 @@ void Game::draw()
 
     field.draw(window, blocks, *turnForm);
     predict.draw(window);
+    score.draw(window);
     
     // exibe
     window->display();
@@ -43,11 +45,12 @@ void Game::game_logic() {
     
     // handle velocity using cooldown
     if (--colldown > 0) return;
-    colldown = MAX_FALL_COOLDOWN;
+    
+    colldown = score.cooldown();
 
     // if collide, handle some events
-    if (check_fall_collisions()) {
-
+    if (check_fall_collisions())
+    {
         // add the turn block in matrix
         for (auto block : *turnForm->blocks)
         {
@@ -65,6 +68,7 @@ void Game::game_logic() {
             }
             if (complete)
             {        
+                score.up();
                 lines_completeds.push_back(i);
             }
         }
@@ -252,7 +256,8 @@ void Game::create_form()
 }
 
 void Game::reset() {
-    colldown = MAX_FALL_COOLDOWN;
+    score.reset();
+    colldown = score.cooldown();
     force_drop = false;
     create_form();
     

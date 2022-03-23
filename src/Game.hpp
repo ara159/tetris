@@ -10,6 +10,7 @@
 #include "constants.hpp"
 #include "PredictArea.hpp"
 #include "Field.hpp"
+#include "Score.hpp"
 
 class Game
 {
@@ -25,6 +26,7 @@ private:
     std::vector<int> lines_completeds;
     PredictArea predict;
     Field field;
+    Score score;
     bool check_fall_collisions();
     void reset();
     void run_animations();

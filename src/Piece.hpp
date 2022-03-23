@@ -4,7 +4,7 @@
 
 using namespace std;
 using namespace sf;
-enum class PieceStyle: int { L = 0, J, T, Z, S, I, O, CompleteLine };
+enum class PieceStyle: int { L = 0, J, T, Z, S, I, O };
 enum class Rotation: int { CLOCKWISE, COUNTER_CLOCKWISE };
 
 class Piece
