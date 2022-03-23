@@ -1,8 +1,8 @@
-build: clean app.out
-	echo ok
+build: clean tetris.out
+	# Build Complete ./tetris.out!
 
-app.out:
-	g++ -g $(wildcard src/*.cpp) -o app.out -lsfml-graphics -lsfml-window -lsfml-system
+tetris.out:
+	g++ -g $(wildcard src/*.cpp) -o tetris.out -lsfml-graphics -lsfml-window -lsfml-system
 
 clean:
-	rm -f app.out
+	rm -f tetris.out tetris.out
