@@ -1,12 +1,13 @@
 #include "Field.hpp"
 #include "constants.hpp"
 
-Field::Field()
+Field::Field() {}
+
+Field::Field(Vector2i position, int block_size)
 {
-    size[0] = COLUMNS;
-    size[1] = LINES;
-    margin[0] = BLOCK_SIZE;
-    margin[1] = BLOCK_SIZE;
+    this->position = position;
+    this->block_size = block_size;
+
     grid_color = Color{60, 98, 158};
     bg_color = Color{0, 0, 0};
 }
@@ -17,9 +18,9 @@ Field::~Field()
 
 void Field::draw(RenderWindow* window, Block* blocks[COLUMNS][LINES], Piece turn)
 {
-    auto box = RectangleShape(Vector2f(size[0] * BLOCK_SIZE, size[1] * BLOCK_SIZE));
+    auto box = RectangleShape(Vector2f(COLUMNS * BLOCK_SIZE, LINES * BLOCK_SIZE));
     box.setFillColor(bg_color);
-    box.setPosition(margin[0], margin[1]);
+    box.setPosition(position.x, position.y);
     window->draw(box);
 
     RectangleShape line = RectangleShape();
@@ -28,7 +29,8 @@ void Field::draw(RenderWindow* window, Block* blocks[COLUMNS][LINES], Piece turn
     // desenha os blocos
     Block block;
     Vector2i pos;
-    int offset[2] = {margin[0] / BLOCK_SIZE, margin[1] / BLOCK_SIZE};
+    auto box_pos = box.getPosition();
+    int offset[2] = {(int) box_pos.x / BLOCK_SIZE, (int) box_pos.y / BLOCK_SIZE};
 
     for (int i = 0; i < COLUMNS; i++)
     {
@@ -98,18 +100,18 @@ void Field::draw(RenderWindow* window, Block* blocks[COLUMNS][LINES], Piece turn
     }
 
     // desenha o grid horizontal
-    for (int i = 0; i < size[1] + 1; i ++)
+    for (int i = 0; i < LINES + 1; i ++)
     {
-        line.setSize(Vector2f(size[0] * BLOCK_SIZE, 2));
-        line.setPosition(margin[0], margin[1] + i * BLOCK_SIZE);
+        line.setSize(Vector2f(COLUMNS * BLOCK_SIZE, 2));
+        line.setPosition(box_pos.x, box_pos.y + i * BLOCK_SIZE);
         window->draw(line);
     }
 
     // desenha o grid vertical
-    for (int i = 0; i < size[0] + 1; i ++)
+    for (int i = 0; i < COLUMNS + 1; i ++)
     {
-        line.setSize(Vector2f(2, size[1] * BLOCK_SIZE));
-        line.setPosition(margin[0] + i * BLOCK_SIZE, margin[1]);
+        line.setSize(Vector2f(2, LINES * BLOCK_SIZE));
+        line.setPosition(box_pos.x + i * BLOCK_SIZE, box_pos.y);
         window->draw(line);
     }
 }

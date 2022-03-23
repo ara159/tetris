@@ -21,6 +21,7 @@ public:
     void rotate(Rotation way);
     void debug(RenderWindow* window);
     void move(int x, int y);
+    Vector2i size();
 };
 
 #define PIECE_H 1

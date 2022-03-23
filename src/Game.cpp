@@ -10,14 +10,23 @@
 #include "Field.hpp"
 #include <string>
 
-Game::Game(bool debug)
+Game::Game()
 {
     this->paused = false;
-    this->debug_mode = debug;
-    this->lines_completeds = std::vector<int>();
-    this->predict = PredictArea();
-    this->field = Field();
-    this->score = Score();
+    this->lines_completeds = vector<int>();
+    this->next = nullptr;
+    this->actual = nullptr;
+    
+    Vector2i pfield(BLOCK_SIZE, BLOCK_SIZE);
+    Vector2i sfield(BLOCK_SIZE * COLUMNS, BLOCK_SIZE * LINES);
+    Vector2i ppredi(pfield.x + sfield.x + BLOCK_SIZE, pfield.y + sfield.y * 0.1);
+    Vector2i pscore(ppredi.x, ppredi.y + BLOCK_SIZE * 4);
+
+    this->field = Field(pfield, BLOCK_SIZE);
+    this->predict = Predict(ppredi, 100);
+    this->score = Score(pscore);
+    this->size = Vector2i(ppredi.x + 100 + BLOCK_SIZE, pfield.y + sfield.y + BLOCK_SIZE);
+
     reset();
 }
 
@@ -27,16 +36,16 @@ Game::~Game()
 
 void Game::draw()
 {
-    const auto bgColor = sf::Color{BG_COLOR};
+    const auto bgColor = Color{BG_COLOR};
     
-    // limpa a tela
+    // clear screen
     window->clear(bgColor);
 
-    field.draw(window, blocks, *turnForm);
+    field.draw(window, blocks, *actual);
     predict.draw(window);
     score.draw(window);
     
-    // exibe
+    // show
     window->display();
 }
 
@@ -52,7 +61,7 @@ void Game::game_logic() {
     if (check_fall_collisions())
     {
         // add the turn block in matrix
-        for (auto block : *turnForm->blocks)
+        for (auto block : *actual->blocks)
         {
             auto pos = block->getPosition();
             blocks[pos.x][pos.y] = block;
@@ -86,12 +95,12 @@ void Game::game_logic() {
         return;
     }
     else {
-        turnForm->move(0, 1);
+        actual->move(0, 1);
     }
 }
 
 bool Game::check_fall_collisions() {
-    for (auto block : *turnForm->blocks)
+    for (auto block : *actual->blocks)
     {
         auto pos = block->getPosition();
 
@@ -112,7 +121,7 @@ bool Game::check_fall_collisions() {
 
 bool Game::check_collision()
 {
-    for (auto block : *turnForm->blocks)
+    for (auto block : *actual->blocks)
     {
         auto pos = block->getPosition();
         if (pos.x >= COLUMNS || pos.x < 0 || pos.y >= LINES || blocks[pos.x][pos.y] != nullptr)
@@ -124,13 +133,13 @@ bool Game::check_collision()
 }
 
 void Game::rotate_pressed() {
-    if (turnForm->style == PieceStyle::O)
+    if (actual->style == PieceStyle::O)
     {
         return;
     }
 
-    int s = turnForm->rotation_state;    
-    turnForm->rotate(Rotation::CLOCKWISE);
+    int s = actual->rotation_state;    
+    actual->rotate(Rotation::CLOCKWISE);
 
     // no collisions, there's no need to use kicks
     if (!check_collision())
@@ -140,7 +149,7 @@ void Game::rotate_pressed() {
     
     int tests[4][4][2];
 
-    if (turnForm->style == PieceStyle::I)
+    if (actual->style == PieceStyle::I)
     {
         int x[4][4] = {
             {-2, 1, -2, 1},
@@ -189,11 +198,11 @@ void Game::rotate_pressed() {
 
     for (int i = 0; i < 5; i++)
     {
-        turnForm->move(tests[s][i][0], tests[s][i][1]);
+        actual->move(tests[s][i][0], tests[s][i][1]);
         if (check_collision())
         {
             // fail - move to original position
-            turnForm->move(-tests[s][i][0], -tests[s][i][1]);
+            actual->move(-tests[s][i][0], -tests[s][i][1]);
         }
         else
         {
@@ -202,23 +211,23 @@ void Game::rotate_pressed() {
     }
 
     // rotation fail
-    turnForm->rotate(Rotation::COUNTER_CLOCKWISE);
+    actual->rotate(Rotation::COUNTER_CLOCKWISE);
 }
 
 void Game::drop_pressed() {
     auto collide = check_fall_collisions();
     while (!collide)
     {
-        turnForm->move(0, 1);
+        actual->move(0, 1);
         collide = check_fall_collisions();
     }
 }
 
 void Game::move_pressed(int direction) {
-    sf::Vector2i position;
+    Vector2i position;
     Block *candidate;
     
-    for (auto block : *turnForm->blocks)
+    for (auto block : *actual->blocks)
     {
         position = block->getPosition();
 
@@ -241,18 +250,18 @@ void Game::move_pressed(int direction) {
         if (position.x + 1 == candidate->getPosition().x)
             return;
     }
-    turnForm->move(direction, 0);
+    actual->move(direction, 0);
 }
 
 void Game::create_form()
 {
-    if (nextForm == nullptr)
-        turnForm = new Piece();
+    if (next == nullptr)
+        actual = new Piece();
     else
-        turnForm = nextForm;
-    nextForm = new Piece();
-    turnForm->move(COLUMNS/2-1, -4);
-    predict.setNextForm(nextForm);
+        actual = next;
+    next = new Piece();
+    actual->move(COLUMNS/2-1, -4);
+    predict.set_next_piece(next);
 }
 
 void Game::reset() {
@@ -271,7 +280,7 @@ void Game::reset() {
 }
 
 void Game::run_animations() {
-    // animação de linha completa
+    // complete line animation
     if (lines_completeds.size() > 0)
     {
         int line = lines_completeds.front();
@@ -296,7 +305,7 @@ void Game::run_animations() {
             draw();
         }
 
-        // faz a lógica necessária após a animação
+        // run after animation logic
         for (int i = 0; i < COLUMNS; i++)
         {
             for (int j = line; j > 0; j--)
@@ -313,9 +322,7 @@ void Game::run_animations() {
 }
 
 void Game::start() {
-    const int width = BLOCK_SIZE * (COLUMNS + 2) + EXTRA_W;
-    const int height = BLOCK_SIZE * (LINES + 2);
-    window = new sf::RenderWindow(sf::VideoMode(width, height), "Tetris");
+    window = new RenderWindow(VideoMode(size.x, size.y), "Tetris");
     window->setVerticalSyncEnabled(true);
     window->setFramerateLimit(60);
     run();
@@ -332,31 +339,32 @@ void Game::run() {
 }
 
 void Game::event_handler() {
-    sf::Event event;
+    Event event;
+    
     while (window->pollEvent(event))
     {
-        if (event.type == sf::Event::Closed)
+        if (event.type == Event::Closed)
         {
             window->close();
         }
-        if ((event.type == sf::Event::KeyReleased) && (event.key.code == sf::Keyboard::Enter))
+        if ((event.type == Event::KeyReleased) && (event.key.code == Keyboard::Enter))
         {
             paused = !paused;
         }
-        if (!paused || debug_mode) {
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+        if (!paused) {
+            if (Keyboard::isKeyPressed(Keyboard::Left))
             {
                 move_pressed(-1);
             }
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+            if (Keyboard::isKeyPressed(Keyboard::Right))
             {
                 move_pressed(1);
             }
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+            if (Keyboard::isKeyPressed(Keyboard::Down))
             {
                 drop_pressed();
             }
-            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space)
+            if (event.type == Event::KeyPressed && event.key.code == Keyboard::Space)
             {
                 rotate_pressed();
             }

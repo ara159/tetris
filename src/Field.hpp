@@ -10,12 +10,13 @@ using namespace sf;
 class Field
 {
 private:
-    int size[2];
-    int margin[2];
+    Vector2i position;
     Color grid_color;
     Color bg_color;
+    int block_size;
 public:
     Field();
+    Field(Vector2i position, int block_size);
     ~Field();
     void draw(RenderWindow* window, Block* blocks[COLUMNS][LINES], Piece turn);
 };

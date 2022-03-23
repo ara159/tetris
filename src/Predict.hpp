@@ -6,18 +6,20 @@
 
 using namespace sf;
 
-class PredictArea
+class Predict
 {
 private:
     Piece* next;
     int block_size;
     int box_area;
-    int box_pos[2];
+    Vector2i position;
+    int size;
 public:
-    PredictArea();
-    ~PredictArea();
+    Predict(Vector2i position, int size);
+    Predict();
+    ~Predict();
     void draw(RenderWindow* window);
-    void setNextForm(Piece* next);
+    void set_next_piece(Piece* next);
 };
 
 #endif

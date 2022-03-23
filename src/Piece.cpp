@@ -124,6 +124,9 @@ void Piece::create_blocks() {
 }
 
 void Piece::rotate(Rotation way) {
+    if (style == PieceStyle::O)
+        return;
+    
     int rotation[2][2];
     
     rotation[0][0] = 0;
@@ -193,4 +196,30 @@ void Piece::move(int x, int y)
     }
     pivot.x += x;
     pivot.y += y;
+}
+
+Vector2i Piece::size() 
+{
+    Vector2i pos;
+    int ymax, xmax;
+    int ymin, xmin;
+    
+    ymax = xmax = INT32_MIN;
+    ymin = xmin = INT32_MAX;
+
+    for (auto block : *blocks)
+    {
+        pos = block->getPosition();
+
+        if (pos.x < xmin)
+            xmin = pos.x;
+        if (pos.x > xmax)
+            xmax = pos.x;
+        if (pos.y < ymin)
+            ymin = pos.y;
+        if (pos.y > ymax)
+            ymax = pos.y;
+    }
+
+    return Vector2i(xmax - xmin, ymax - ymin);
 }

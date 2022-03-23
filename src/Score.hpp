@@ -11,9 +11,10 @@ private:
     int lines;
     int next_colldown;
     Font font;
-    int position[2];
+    Vector2i position;
 public:
     Score();
+    Score(Vector2i position);
     ~Score();
     void up();
     void reset();

@@ -4,15 +4,16 @@
 #include "constants.hpp"
 #include <string>
 
-Score::Score()
+Score::Score() {}
+
+Score::Score(Vector2i position)
 {
     font = Font();
     if (!font.loadFromFile("arial.ttf"))
     {
         std::cout << "Error on loading file 'arial.ttf'" << std::endl;
     }
-    position[0] = FIELD_W + EXTRA_W * 0.5f;
-    position[1] = FIELD_H * 0.4f;
+    this->position = position;
     reset();
 }
 
@@ -65,11 +66,11 @@ void Score::draw(RenderWindow* window)
 {
     Text text_lines("LINES: " + std::to_string(lines), font);
     text_lines.setCharacterSize(18);
-    text_lines.setPosition(position[0], position[1]);
+    text_lines.setPosition(position.x, position.y);
     window->draw(text_lines);
 
     Text text_level("LEVEL: " + std::to_string(level), font);
     text_level.setCharacterSize(18);
-    text_level.setPosition(position[0], position[1] + BLOCK_SIZE);
+    text_level.setPosition(position.x, position.y + 20);
     window->draw(text_level);
 }
