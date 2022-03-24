@@ -46,6 +46,23 @@ void Game::draw()
     predict.draw(window);
     score.draw(window);
     
+    // paused screen
+    if (paused)
+    {
+        RectangleShape fg(Vector2f(size.x, size.y));
+        fg.setFillColor(Color{0, 0, 0, 64});
+        fg.setPosition(0, 0);
+        window->draw(fg);
+
+        auto font = Font();
+        font.loadFromFile("Tetris.ttf");
+        Text text("PAUSED", font);
+        text.setCharacterSize(28);
+        text.setPosition(size.x / 2 - text.getCharacterSize() * 3, size.y / 2);
+        text.setStyle(Text::Bold);
+        window->draw(text);
+    }
+
     // show
     window->display();
 }
@@ -82,6 +99,7 @@ void Game::game_logic() {
             if (complete)
             {        
                 score.up();
+                fall_cdwn.set_max(score.cooldown());
                 lines_completeds.push_back(i);
             }
         }
@@ -274,7 +292,8 @@ void Game::reset() {
     score.reset();
     force_drop = false;
     prep_cdwn.reset();
-    fall_cdwn = Cooldown(score.cooldown(), true);
+    fall_cdwn.set_max(score.cooldown());
+    fall_cdwn.reset();
     create_form();
     
     for (int i = 0; i < COLUMNS; i++)

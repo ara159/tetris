@@ -31,3 +31,8 @@ void Cooldown::set_remaining(int remaining)
 {
     this->remaining = remaining;
 }
+
+void Cooldown::set_max(int max)
+{
+    this->max = max;
+}

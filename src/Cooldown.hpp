@@ -14,6 +14,7 @@ public:
     bool check();
     void reset();
     void set_remaining(int remaining);
+    void set_max(int max);
 };
 
 #endif
