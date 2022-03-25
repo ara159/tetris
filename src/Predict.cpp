@@ -25,11 +25,11 @@ void Predict::draw(RenderWindow* window)
     box.setPosition(position.x, position.y);
     window->draw(box);
 
-    Vector2i spiece = next->size();
+    Vector2i spiece = next.size();
     int v_size = (spiece.y + 1) * block_size;
     int h_size = (spiece.x + 1) * block_size;
 
-    for (auto block : *next->blocks)
+    for (auto block : next.blocks)
     {
         auto pos = block->getPosition();
         
@@ -41,25 +41,25 @@ void Predict::draw(RenderWindow* window)
             pos.y * block_size + position.y + size - v_size - (size - v_size) / 2  // y
         );
         // some rotations demands adjusts on alignment
-        if (next->rotation_state == 2)
+        if (next.rotation_state == 2)
         {
             b.setPosition(
                 b.getPosition().x,
                 b.getPosition().y - block_size
             );
         }
-        if (next->rotation_state == 1)
+        if (next.rotation_state == 1)
         {
             b.setPosition(
-                b.getPosition().x - block_size * (next->style == PieceStyle::I ? 2 : 1),
-                b.getPosition().y + block_size * (next->style == PieceStyle::I ? 1 : 0)
+                b.getPosition().x - block_size * (next.style == PieceStyle::I ? 2 : 1),
+                b.getPosition().y + block_size * (next.style == PieceStyle::I ? 1 : 0)
             );
         }
         window->draw(b);
     }
 }
 
-void Predict::set_next_piece(Piece *next)
+void Predict::set_next_piece(Piece next)
 {
     this->next = next;
 }

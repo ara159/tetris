@@ -14,8 +14,6 @@ Game::Game()
 {
     this->paused = false;
     this->lines_completeds = vector<int>();
-    this->next = nullptr;
-    this->actual = nullptr;
     
     Vector2i pfield(BLOCK_SIZE, BLOCK_SIZE);
     Vector2i sfield(BLOCK_SIZE * COLUMNS, BLOCK_SIZE * LINES);
@@ -42,7 +40,7 @@ void Game::draw()
     // clear screen
     window->clear(bgColor);
 
-    field.draw(window, blocks, *actual);
+    field.draw(window, blocks, actual);
     predict.draw(window);
     score.draw(window);
     
@@ -82,7 +80,7 @@ void Game::game_logic() {
     if (check_fall_collisions())
     {
         // add the turn block in matrix
-        for (auto block : *actual->blocks)
+        for (auto block : actual.blocks)
         {
             auto pos = block->getPosition();
             blocks[pos.x][pos.y] = block;
@@ -117,22 +115,22 @@ void Game::game_logic() {
         return;
     }
     else {
-        actual->move(0, 1);
+        actual.move(0, 1);
     }
 }
 
 bool Game::check_fall_collisions() {
-    for (auto block : *actual->blocks)
+    for (auto block : actual.blocks)
     {
         auto pos = block->getPosition();
 
         // pre game
-        if (pos.y < 0 || pos.x < 0)
+        if (pos.y < 0)
         {
             continue;
         }
         
-        // touch on floor
+        // touch on floor or other block
         if (pos.y == LINES - 1 || blocks[pos.x][pos.y + 1] != nullptr)
         {
             return true;
@@ -143,7 +141,7 @@ bool Game::check_fall_collisions() {
 
 bool Game::check_collision()
 {
-    for (auto block : *actual->blocks)
+    for (auto block : actual.blocks)
     {
         auto pos = block->getPosition();
         if (pos.x >= COLUMNS || pos.x < 0 || pos.y >= LINES || blocks[pos.x][pos.y] != nullptr)
@@ -155,13 +153,13 @@ bool Game::check_collision()
 }
 
 void Game::rotate_pressed() {
-    if (actual->style == PieceStyle::O)
+    if (actual.style == PieceStyle::O)
     {
         return;
     }
 
-    int s = actual->rotation_state;    
-    actual->rotate(Rotation::CLOCKWISE);
+    int s = actual.rotation_state;    
+    actual.rotate(Rotation::CLOCKWISE);
 
     // no collisions, there's no need to use kicks
     if (!check_collision())
@@ -171,7 +169,7 @@ void Game::rotate_pressed() {
     
     int tests[4][4][2];
 
-    if (actual->style == PieceStyle::I)
+    if (actual.style == PieceStyle::I)
     {
         int x[4][4] = {
             {-2, 1, -2, 1},
@@ -220,11 +218,11 @@ void Game::rotate_pressed() {
 
     for (int i = 0; i < 5; i++)
     {
-        actual->move(tests[s][i][0], tests[s][i][1]);
+        actual.move(tests[s][i][0], tests[s][i][1]);
         if (check_collision())
         {
             // fail - move to original position
-            actual->move(-tests[s][i][0], -tests[s][i][1]);
+            actual.move(-tests[s][i][0], -tests[s][i][1]);
         }
         else
         {
@@ -233,23 +231,14 @@ void Game::rotate_pressed() {
     }
 
     // rotation fail
-    actual->rotate(Rotation::COUNTER_CLOCKWISE);
-}
-
-void Game::drop_pressed() {
-    auto collide = check_fall_collisions();
-    while (!collide)
-    {
-        actual->move(0, 1);
-        collide = check_fall_collisions();
-    }
+    actual.rotate(Rotation::COUNTER_CLOCKWISE);
 }
 
 void Game::move_pressed(int direction) {
     Vector2i position;
     Block *candidate;
     
-    for (auto block : *actual->blocks)
+    for (auto block : actual.blocks)
     {
         position = block->getPosition();
 
@@ -272,25 +261,22 @@ void Game::move_pressed(int direction) {
         if (position.x + 1 == candidate->getPosition().x)
             return;
     }
-    actual->move(direction, 0);
+    actual.move(direction, 0);
 }
 
 void Game::create_form()
 {
-    if (next == nullptr)
-        actual = new Piece();
-    else
-        actual = next;
-    
-    next = new Piece();
-    actual->move(COLUMNS/2-1, - actual->size().y - 2);
+    actual = next;
+    next = Piece();
+    actual.move(COLUMNS/2-1, - actual.size().y - 2);
     predict.set_next_piece(next);
     prep_cdwn.reset();
 }
 
 void Game::reset() {
+    actual = Piece();
+    next = Piece();
     score.reset();
-    force_drop = false;
     prep_cdwn.reset();
     fall_cdwn.set_max(score.cooldown());
     fall_cdwn.reset();
@@ -330,8 +316,15 @@ void Game::run_animations() {
             }
             draw();
         }
-
+        
         // run after animation logic
+
+        // free blocks memory
+        for (int j = 0; j < COLUMNS; j++)
+        {
+            free(blocks[j][line]);
+        }
+
         for (int i = 0; i < COLUMNS; i++)
         {
             for (int j = line; j > 0; j--)

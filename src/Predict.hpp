@@ -9,7 +9,7 @@ using namespace sf;
 class Predict
 {
 private:
-    Piece* next;
+    Piece next;
     int block_size;
     int box_area;
     Vector2i position;
@@ -19,7 +19,7 @@ public:
     Predict();
     ~Predict();
     void draw(RenderWindow* window);
-    void set_next_piece(Piece* next);
+    void set_next_piece(Piece next);
 };
 
 #endif

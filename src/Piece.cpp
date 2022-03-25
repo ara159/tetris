@@ -9,7 +9,7 @@
 
 Piece::Piece()
 {
-    blocks = new vector<Block*>();
+    blocks = vector<Block*>();
     style = static_cast<PieceStyle>(rand() % 7);
     rotation_state = 0;
     create_blocks();
@@ -114,7 +114,7 @@ void Piece::create_blocks() {
         auto block = new Block();
         block->setPosition(format.at(i), format.at(i+1));
         block->setFillColor(color);
-        blocks->push_back(block);
+        blocks.push_back(block);
     }
 
     for (int i = 0; i < rand() % 4; i++)
@@ -144,9 +144,9 @@ void Piece::rotate(Rotation way) {
         rotation[1][0] = -1;
     }
 
-    for (int i = 0; i < blocks->size(); i++)
+    for (int i = 0; i < blocks.size(); i++)
     {
-        auto block = blocks->at(i);
+        auto block = blocks.at(i);
 
         float pos[2] = {block->getPosition().x - pivot.x, block->getPosition().y - pivot.y};
         float x = 0;
@@ -166,7 +166,7 @@ void Piece::rotate(Rotation way) {
         y += pivot.y;
         block->setPosition(x, y);
     }
-    for (auto block : *blocks)
+    for (auto block : blocks)
     {
         if (way == Rotation::CLOCKWISE)
             block->move(-1, 0);
@@ -190,7 +190,7 @@ void Piece::debug(RenderWindow* window) {
 
 void Piece::move(int x, int y)
 {
-    for (auto block : *blocks)
+    for (auto block : blocks)
     {
         block->move(x, y);
     }
@@ -207,7 +207,7 @@ Vector2i Piece::size()
     ymax = xmax = INT32_MIN;
     ymin = xmin = INT32_MAX;
 
-    for (auto block : *blocks)
+    for (auto block : blocks)
     {
         pos = block->getPosition();
 

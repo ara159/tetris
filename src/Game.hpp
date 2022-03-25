@@ -23,9 +23,8 @@ private:
     bool paused;
     Block* blocks[COLUMNS][LINES];
     RenderWindow* window;
-    Piece* actual;
-    Piece* next;
-    bool force_drop;
+    Piece actual;
+    Piece next;
     vector<int> lines_completeds;
     Predict predict;
     Field field;
@@ -40,7 +39,6 @@ private:
     void draw();
     void rotate_pressed();
     void increase_velocity();
-    void drop_pressed();
     void move_pressed(int direction);
     void event_handler();
     void create_form();

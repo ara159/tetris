@@ -47,18 +47,18 @@ void Field::draw(RenderWindow* window, Block* blocks[COLUMNS][LINES], Piece turn
     }
 
     // draws the block preview
-    Block bcopy[turn.blocks->size()];
+    Block bcopy[turn.blocks.size()];
     
-    for (int i = 0; i < turn.blocks->size(); i++)
+    for (int i = 0; i < turn.blocks.size(); i++)
     {
-        bcopy[i] = *turn.blocks->at(i);
+        bcopy[i] = *turn.blocks.at(i);
     }
 
     while (true)
     {
         bool stop = false;
 
-        for (int i = 0; i < turn.blocks->size(); i++)
+        for (int i = 0; i < turn.blocks.size(); i++)
         {
             pos = bcopy[i].getPosition();
             if (pos.y >= LINES - 1 || blocks[pos.x][pos.y + 1] != nullptr)
@@ -69,7 +69,7 @@ void Field::draw(RenderWindow* window, Block* blocks[COLUMNS][LINES], Piece turn
         }
         if (stop)
         {
-            for (int i = 0; i < turn.blocks->size(); i++)
+            for (int i = 0; i < turn.blocks.size(); i++)
             {
                 pos = bcopy[i].getPosition();
                 if (pos.y < 0 || pos.y >= LINES || blocks[pos.x][pos.y] != nullptr) continue;
@@ -83,7 +83,7 @@ void Field::draw(RenderWindow* window, Block* blocks[COLUMNS][LINES], Piece turn
         }
         else
         {
-            for (int i = 0; i < turn.blocks->size(); i++)
+            for (int i = 0; i < turn.blocks.size(); i++)
             {
                 bcopy[i].move(0, 1);
             }        
@@ -91,7 +91,7 @@ void Field::draw(RenderWindow* window, Block* blocks[COLUMNS][LINES], Piece turn
     }
 
     // draws current piece
-    for (auto tblock : *turn.blocks)
+    for (auto tblock : turn.blocks)
     {
         block = *tblock;
         pos = block.getPosition();

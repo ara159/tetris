@@ -13,7 +13,7 @@ private:
     void create_blocks();
 public:
     Vector2f pivot;
-    vector<Block*>* blocks;
+    vector<Block*> blocks;
     PieceStyle style;
     int rotation_state;
     Piece();
