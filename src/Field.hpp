@@ -1,9 +1,10 @@
 #ifndef FIELD_FH
 #define FIELD_FH 1
 #include <SFML/Graphics.hpp>
+
 #include "Block.hpp"
-#include "constants.hpp"
 #include "Piece.hpp"
+#include "Constants.hpp"
 
 using namespace sf;
 

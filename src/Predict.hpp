@@ -2,7 +2,6 @@
 #define PREDICT_H 1
 #include <SFML/Graphics.hpp>
 #include "Piece.hpp"
-#include "constants.hpp"
 
 using namespace sf;
 

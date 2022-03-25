@@ -5,7 +5,6 @@
 #include <cmath>
 #include "Block.hpp"
 #include "Piece.hpp"
-#include "constants.hpp"
 #include "Game.hpp"
 #include "Field.hpp"
 #include <string>
@@ -26,16 +25,22 @@ Game::Game()
     this->size = Vector2i(ppredi.x + 100 + BLOCK_SIZE, pfield.y + sfield.y + BLOCK_SIZE);
     this->prep_cdwn = Cooldown(30, false);
 
+    // initialize game table
+    for (int i = 0; i < COLUMNS; i++)
+        for (int j = 0; j < LINES; j++)
+            blocks[i][j] = nullptr;
+
     reset();
 }
 
 Game::~Game()
 {
+    clear_game_table();
 }
 
 void Game::draw()
 {
-    const auto bgColor = Color{BG_COLOR};
+    const auto bgColor = Color{0, 20, 43};
     
     // clear screen
     window->clear(bgColor);
@@ -281,12 +286,20 @@ void Game::reset() {
     fall_cdwn.set_max(score.cooldown());
     fall_cdwn.reset();
     create_form();
-    
+    clear_game_table();
+}
+
+void Game::clear_game_table()
+{
     for (int i = 0; i < COLUMNS; i++)
     {
         for (int j = 0; j < LINES; j++)
         {
-            blocks[i][j] = nullptr;
+            if (blocks[i][j] != nullptr) 
+            {
+                free(blocks[i][j]);
+                blocks[i][j] = nullptr;
+            }
         }
     }
 }
@@ -345,6 +358,7 @@ void Game::start() {
     window->setVerticalSyncEnabled(true);
     window->setFramerateLimit(60);
     run();
+    clear_game_table();
 }
 
 void Game::run() {

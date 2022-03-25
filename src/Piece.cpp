@@ -5,7 +5,7 @@
 #include <math.h>
 #include "Block.hpp"
 #include "Piece.hpp"
-#include "constants.hpp"
+#include "Game.hpp"
 
 Piece::Piece()
 {

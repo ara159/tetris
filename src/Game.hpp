@@ -1,16 +1,17 @@
 #ifndef GAME_H
 #define GAME_H 1
+
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <iostream>
 #include "Block.hpp"
 #include "Piece.hpp"
-#include "constants.hpp"
 #include "Field.hpp"
 #include "Score.hpp"
 #include "Predict.hpp"
 #include "Cooldown.hpp"
+#include "Constants.hpp"
 
 using namespace sf;
 using namespace std;
@@ -43,6 +44,7 @@ private:
     void event_handler();
     void create_form();
     bool check_collision();
+    void clear_game_table();
 public:
     Game();
     ~Game();

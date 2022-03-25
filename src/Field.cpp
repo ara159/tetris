@@ -1,5 +1,4 @@
 #include "Field.hpp"
-#include "constants.hpp"
 
 Field::Field() {}
 

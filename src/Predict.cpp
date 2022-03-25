@@ -1,5 +1,4 @@
 #include "Predict.hpp"
-#include "constants.hpp"
 
 using namespace sf;
 
@@ -19,7 +18,7 @@ Predict::Predict(Vector2i position, int size)
 void Predict::draw(RenderWindow* window)
 {
     auto box = RectangleShape(Vector2f(size, size));
-    box.setFillColor(Color{BG_COLOR});
+    box.setFillColor(Color{0, 20, 43});
     box.setOutlineColor(Color::White);
     box.setOutlineThickness(1);
     box.setPosition(position.x, position.y);

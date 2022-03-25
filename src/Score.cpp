@@ -1,7 +1,7 @@
 #include "Score.hpp"
 #include "SFML/Graphics.hpp"
 #include "iostream"
-#include "constants.hpp"
+#include "Game.hpp"
 #include <string>
 
 Score::Score() {}

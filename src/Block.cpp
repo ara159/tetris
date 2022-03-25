@@ -1,6 +1,6 @@
 #include <SFML/Graphics.hpp>
-#include "constants.hpp"
 #include "Block.hpp"
+#include "Game.hpp"
 
 using namespace sf;
 using namespace std;
